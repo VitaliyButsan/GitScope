@@ -13,11 +13,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        let navigationController = UINavigationController(rootViewController: ViewController())
+        // entry point
+        window = UIWindow()
+        window?.makeKeyAndVisible()
+        let navigationController = UINavigationController(rootViewController: GitCardsTableViewController())
         window?.rootViewController = navigationController
+        
         return true
     }
 
