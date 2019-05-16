@@ -1,0 +1,26 @@
+
+
+# organization struct
+query GetGitOrgQL($login: String!) {
+    organization(login: $login) {
+        name
+        url
+    }
+}
+
+
+# user struct
+query GetUserQL($login: String!) {
+    user(login: $login) {
+        login
+        repositories(first: 30) {
+            nodes {
+                name
+                createdAt
+            },
+            totalDiskUsage
+        },
+        avatarUrl
+    }
+    
+}

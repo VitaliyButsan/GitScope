@@ -8,5 +8,6 @@ target 'GitScope' do
   # Pods for GitScope
   pod 'Alamofire'
   pod 'Apollo'
+  pod 'SDWebImage'
 
 end

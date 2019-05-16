@@ -4,16 +4,23 @@ import Apollo
 
 public final class GetGitOrgQlQuery: GraphQLQuery {
   public let operationDefinition =
-    "query GetGitOrgQL {\n  organization(login: \"facebook\") {\n    __typename\n    name\n    url\n  }\n}"
+    "query GetGitOrgQL($login: String!) {\n  organization(login: $login) {\n    __typename\n    name\n    url\n  }\n}"
 
-  public init() {
+  public var login: String
+
+  public init(login: String) {
+    self.login = login
+  }
+
+  public var variables: GraphQLMap? {
+    return ["login": login]
   }
 
   public struct Data: GraphQLSelectionSet {
     public static let possibleTypes = ["Query"]
 
     public static let selections: [GraphQLSelection] = [
-      GraphQLField("organization", arguments: ["login": "facebook"], type: .object(Organization.selections)),
+      GraphQLField("organization", arguments: ["login": GraphQLVariable("login")], type: .object(Organization.selections)),
     ]
 
     public private(set) var resultMap: ResultMap
@@ -89,16 +96,23 @@ public final class GetGitOrgQlQuery: GraphQLQuery {
 
 public final class GetUserQlQuery: GraphQLQuery {
   public let operationDefinition =
-    "query GetUserQL {\n  user(login: \"vitket\") {\n    __typename\n    login\n    repositories(first: 20, affiliations: [OWNER]) {\n      __typename\n      nodes {\n        __typename\n        name\n        createdAt\n      }\n      totalDiskUsage\n    }\n    avatarUrl\n  }\n}"
+    "query GetUserQL($login: String!) {\n  user(login: $login) {\n    __typename\n    login\n    repositories(first: 30) {\n      __typename\n      nodes {\n        __typename\n        name\n        createdAt\n      }\n      totalDiskUsage\n    }\n    avatarUrl\n  }\n}"
 
-  public init() {
+  public var login: String
+
+  public init(login: String) {
+    self.login = login
+  }
+
+  public var variables: GraphQLMap? {
+    return ["login": login]
   }
 
   public struct Data: GraphQLSelectionSet {
     public static let possibleTypes = ["Query"]
 
     public static let selections: [GraphQLSelection] = [
-      GraphQLField("user", arguments: ["login": "vitket"], type: .object(User.selections)),
+      GraphQLField("user", arguments: ["login": GraphQLVariable("login")], type: .object(User.selections)),
     ]
 
     public private(set) var resultMap: ResultMap
@@ -127,7 +141,7 @@ public final class GetUserQlQuery: GraphQLQuery {
       public static let selections: [GraphQLSelection] = [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
         GraphQLField("login", type: .nonNull(.scalar(String.self))),
-        GraphQLField("repositories", arguments: ["first": 20, "affiliations": ["OWNER"]], type: .nonNull(.object(Repository.selections))),
+        GraphQLField("repositories", arguments: ["first": 30], type: .nonNull(.object(Repository.selections))),
         GraphQLField("avatarUrl", type: .nonNull(.scalar(String.self))),
       ]
 

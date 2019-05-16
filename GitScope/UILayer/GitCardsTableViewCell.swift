@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 // cards table view cell class
 class GitCardsTableViewCell: UITableViewCell {
@@ -26,7 +27,7 @@ class GitCardsTableViewCell: UITableViewCell {
     var iconView: UIImageView = {
         let icon = UIImageView()
         icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.image = UIImage(named: "EmptyFace.jpg")
+        icon.image = UIImage(named: "EmptyFace.png")
         icon.clipsToBounds = true
         icon.alpha = 0
         icon.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
@@ -39,7 +40,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let name = UILabel()
         name.translatesAutoresizingMaskIntoConstraints = false
         name.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        name.text = "Apple.com/swift"
+        name.text = "- - - - -"
         name.alpha = 0
         name.font = name.font.withSize(26)
         return name
@@ -50,6 +51,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let solidLine = UIView()
         solidLine.translatesAutoresizingMaskIntoConstraints = false
         solidLine.backgroundColor = #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)
+        solidLine.alpha = 0
         return solidLine
     }()
     
@@ -78,8 +80,8 @@ class GitCardsTableViewCell: UITableViewCell {
         let nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        nameLabel.text = "Apple.company"
-        nameLabel.font = UIFont.systemFont(ofSize: 12, weight: UIFont.Weight.medium)
+        nameLabel.text = "- - - - -"
+        nameLabel.font = UIFont.systemFont(ofSize: 12, weight: UIFont.Weight.thin)
         //nameLabel.font = nameLabel.font.withSize(12)
         return nameLabel
     }()
@@ -128,7 +130,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let yearLabel = UILabel()
         yearLabel.translatesAutoresizingMaskIntoConstraints = false
         yearLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        yearLabel.text = "1972"
+        yearLabel.text = "- - -"
         yearLabel.textAlignment = .center
         return yearLabel
     }()
@@ -146,7 +148,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let counter = UILabel()
         counter.translatesAutoresizingMaskIntoConstraints = false
         counter.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        counter.text = "17"
+        counter.text = "- - -"
         counter.textAlignment = .center
         return counter
     }()
@@ -164,7 +166,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let name = UILabel()
         name.translatesAutoresizingMaskIntoConstraints = false
         name.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        name.text = "45"
+        name.text = "- - -"
         name.textAlignment = .center
         return name
     }()
@@ -182,7 +184,7 @@ class GitCardsTableViewCell: UITableViewCell {
         let profLanguages = UILabel()
         profLanguages.translatesAutoresizingMaskIntoConstraints = false
         profLanguages.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        profLanguages.text = "3"
+        profLanguages.text = "- - -"
         profLanguages.textAlignment = .center
         return profLanguages
     }()
@@ -203,7 +205,7 @@ class GitCardsTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        self.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        self.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
         // define some properties to happen setup constraints
         let defaultIndent: CGFloat = 16
         let heightInfoView: CGFloat = 60
@@ -356,5 +358,46 @@ class GitCardsTableViewCell: UITableViewCell {
         //---------------------------------------------------------------------------------------
     }
     
+    // defined update cell func
+    func updateCell(withData data: GetUserQlQuery.Data.User, forIndexPath indexPath: IndexPath) {
+        let imageLink = URL(string: data.avatarUrl)!
+        iconView.sd_setImage(with: imageLink, completed: nil)
+        nameLabel.text = data.repositories.nodes?[indexPath.row]?.name
+        nameCompanyLabel.text = data.repositories.nodes?[indexPath.row]?.createdAt
+    }
+    
+    // define labels animator
+    func animateViewsInsideCell(completionHandler: @escaping (Bool) -> Void) {
+        
+        // set font for some labels
+        [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 22, weight: UIFont.Weight.thin) }
+        [titleCompanyLabel, titleYearLabel, titlePepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.thin)}
+        
+        // define animation cellSubViews func
+        func animatorCellSubViews(forView inputedView: UIView, withDelay inputedDelay: Double) {
+            UIView.animate(withDuration: 1, delay: inputedDelay, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                inputedView.frame = CGRect(x: -400, y: 0, width: 0, height: 0)
+                inputedView.alpha = 1
+            })
+        }
+
+        // animate views inside cell
+        animatorCellSubViews(forView: iconView, withDelay: 0.5)
+        animatorCellSubViews(forView: decorationSolidLineView, withDelay: 0.5)
+        animatorCellSubViews(forView: nameLabel, withDelay: 1.0)
+        animatorCellSubViews(forView: companyView, withDelay: 1.5)
+        animatorCellSubViews(forView: yearCreatedView, withDelay: 2.0)
+        animatorCellSubViews(forView: repoView, withDelay: 2.1)
+        animatorCellSubViews(forView: starsView, withDelay: 2.2)
+
+        // animate view8 inside the cell
+        UIView.animate(withDuration: 1, delay: 2.3, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.profLanguagesView.frame = CGRect(x: -100, y: 0, width: 0, height: 0)
+            self.profLanguagesView.alpha = 1
+        }) { _ in
+            completionHandler(true)
+        }
+    } // END animation func -------------------------------------------------------------------------------------------------
+
 }
 

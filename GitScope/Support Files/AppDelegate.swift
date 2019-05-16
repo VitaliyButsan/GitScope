@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // entry point
         window = UIWindow()
         window?.makeKeyAndVisible()
+        window?.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
         let navigationController = UINavigationController(rootViewController: GitCardsTableViewController())
         window?.rootViewController = navigationController
         
