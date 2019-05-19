@@ -1,19 +1,20 @@
 
 
-# organization struct
-query GetGitOrgQL($login: String!) {
-    organization(login: $login) {
+# repository QL struct
+query GetRepoQL($name: String!, $owner: String!) {
+    repository(name: $name, owner: $owner) {
         name
-        url
+        createdAt
     }
+    
 }
 
-
-# user struct
+# user QL struct
 query GetUserQL($login: String!) {
     user(login: $login) {
         login
-        repositories(first: 30) {
+        company
+        repositories(first: 3) {
             nodes {
                 name
                 createdAt
@@ -24,3 +25,90 @@ query GetUserQL($login: String!) {
     }
     
 }
+
+# organization QL struct
+query GetGitOrgQL($withName: String!) {
+    organization(login: $withName) {
+        name
+        url
+    }
+}
+
+query CallsLimitStatusQL {
+    rateLimit {
+        cost
+        limit
+        nodeCount
+        remaining
+        resetAt
+    }
+}
+
+# -----------------------------------------------------------------
+query SearchUsersQL($withName: String!) {
+    search(first: 20, query: $withName, type: USER) {
+        nodes {
+            ... UserDetail
+        }
+    }
+}
+
+fragment UserDetail on User {
+    avatarUrl
+    company
+    createdAt
+    login
+    repositories {
+        totalCount
+    }
+    
+} # -----------------------------------------------------------------
+
+
+#starredRepositories {
+#    nodes {
+#
+#    }
+#}
+
+# -----------------------------------------------------------------
+query SearchReposQL($withName: String!) {
+    search(first: 20, query: $withName, type: REPOSITORY) {
+        #repositoryCount
+        nodes {
+            ...RepositoryDetail
+        }
+    }
+}
+
+fragment RepositoryDetail on Repository {
+    createdAt
+    isPrivate
+    name
+    nameWithOwner
+    assignableUsers(first: 0) {
+        totalCount
+    },
+    collaborators {
+        totalCount
+    },
+    commitComments {
+        totalCount
+    },
+    mentionableUsers {
+        totalCount
+    },
+    owner {
+        login
+        avatarUrl
+    },
+    primaryLanguage {
+        name
+    },
+    stargazers {
+        totalCount
+    },
+    watchers {
+        totalCount
+    }
+} # ---------------------------------------------------------------

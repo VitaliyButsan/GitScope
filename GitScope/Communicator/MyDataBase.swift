@@ -15,8 +15,9 @@ class MyDataBase {
     // singleton
     static let shared = MyDataBase()
     
-    var userContainer: GetUserQlQuery.Data.User?
-    var organizationContainer: GetGitOrgQlQuery.Data.Organization?
+    var userContainer: SearchUsersQlQuery.Data.Search?
+    var repositoriesContainer: SearchReposQlQuery.Data.Search?
+    var organizationsContainer: GetGitOrgQlQuery.Data.Organization?
     
     // created apollo client
     let apollo: ApolloClient = {
@@ -28,50 +29,52 @@ class MyDataBase {
         return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
     }()
     
-
-    // define getUsers func
-    func getUsers(withName userName: String, completionHandler: @escaping (GetUserQlQuery.Data.User?) -> Void) {
+    
+    // define getData func ------------------------------------------------------------------------
+    func getData(withSearchInput searchInput: String, forScopeBarVariant scopeBarVariant: String, completionHandler: @escaping(Bool) -> Void) {
+        
+        if scopeBarVariant == "Repositories" {
+            // apollo request
+            apollo.fetch(query: SearchReposQlQuery(withName: searchInput)) { (result, error) in
+                // chesk response
+                guard let receivedRepositoriesStruct = result?.data?.search, error == nil else { completionHandler(false); return }
+                // if response success
+                self.repositoriesContainer = receivedRepositoriesStruct
+                completionHandler(true)
+            }
+            
+        } else if scopeBarVariant == "Users" {
+                // apollo request
+                apollo.fetch(query: SearchUsersQlQuery(withName: searchInput)) { (result, error) in
+                    // check response
+                    guard let receivedUserStruct = result?.data?.search, error == nil else { completionHandler(false); return }
+                    // if response is success
+                    self.userContainer = receivedUserStruct
+                    completionHandler(true)
+                }
+            
+        } else if scopeBarVariant == "Organizations" {
+            // apollo request
+            apollo.fetch(query: GetGitOrgQlQuery(withName: searchInput)) { (result, error) in
+                
+            }
+        }
+    } // ------------------------------------------------------------------------------------------
+    
+    
+    func getLimitStatus() {
         // apollo request
-        apollo.fetch(query: GetUserQlQuery(login: userName)) { (result, error) in
-            // check response
-            guard let userStruct = result?.data?.user, error == nil else {
-                completionHandler(nil)
-                return
-            }
+        apollo.fetch(query: CallsLimitStatusQlQuery()) { (result, error) in
+            guard let limitStatusStruct = result?.data?.rateLimit else { return }
             
-            // if response is success
-            self.userContainer = userStruct
-            completionHandler(self.userContainer)
-        }
-        
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    func getOrg() {
-        let getOrgQL = GetGitOrgQlQuery(login: "facebook")
-        
-        apollo.fetch(query: getOrgQL) { (result, error) in
-            
-            guard let org = result?.data?.organization else {
-                print("There is no Data")
-                return
-            }
-            
-            print("-----------------------------------------------------")
-            print("ORGANIZATION NAME: \(String(describing: org.name))")
-            print("ORGANIZATION LINK: \(org.url)")
-            print("-----------------------------------------------------")
+            print("-------------------------- ")
+            print("cost:", limitStatusStruct.cost)
+            print("limit:", limitStatusStruct.limit)
+            print("nodeCont:", limitStatusStruct.nodeCount)
+            print("remaining:", limitStatusStruct.remaining)
+            print("resetAt:", limitStatusStruct.resetAt)
+            print("-------------------------- ")
         }
     }
-    
-    
-    
     
 }

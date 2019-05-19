@@ -10,4 +10,4 @@
 // Constants for GitLogin
 
 let vitGitHubGraphQLEndPoint = "https://api.github.com/graphql"
-let vitGitHubBearerToken = "4c14f8f20b277edf3e054a73278e4b9e69dc6397"
+let vitGitHubBearerToken = "b767a88b775c4e17601ed38474df369a9a3d1c15"

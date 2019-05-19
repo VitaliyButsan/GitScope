@@ -42,7 +42,7 @@ class GitCardsTableViewCell: UITableViewCell {
         name.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         name.text = "- - - - -"
         name.alpha = 0
-        name.font = name.font.withSize(26)
+        name.font = name.font.withSize(24)
         return name
     }()
     
@@ -56,7 +56,7 @@ class GitCardsTableViewCell: UITableViewCell {
     }()
     
     // MARK: - Created companyView under nameLabel
-    // created company view bottom nameLabel
+    // created company view under nameLabel
     // ========================================================================
     var companyView: UIView = {
         let companyView = UIView()
@@ -81,15 +81,14 @@ class GitCardsTableViewCell: UITableViewCell {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         nameLabel.text = "- - - - -"
-        nameLabel.font = UIFont.systemFont(ofSize: 12, weight: UIFont.Weight.thin)
-        //nameLabel.font = nameLabel.font.withSize(12)
+        nameLabel.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.medium)
         return nameLabel
-    }()
-    // ========================================================================
+    }() // ====================================================================
+    
     
     // MARK: - Created 4 bottom info views
     // created four bottom info views
-    // ========================================================================
+    // yearView with subViews =================================================
     var yearCreatedView: UIView = {
         let yearView = UIView()
         yearView.translatesAutoresizingMaskIntoConstraints = false
@@ -98,39 +97,11 @@ class GitCardsTableViewCell: UITableViewCell {
         return yearView
     }()
     
-    var repoView: UIView = {
-        let repoView = UIView()
-        repoView.translatesAutoresizingMaskIntoConstraints = false
-        repoView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        repoView.alpha = 0
-        return repoView
-    }()
-
-    var starsView: UIView = {
-        let starsView = UIView()
-        starsView.translatesAutoresizingMaskIntoConstraints = false
-        starsView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        starsView.alpha = 0
-        return starsView
-    }()
-    
-    var profLanguagesView: UIView = {
-        let languagesView = UIView()
-        languagesView.translatesAutoresizingMaskIntoConstraints = false
-        languagesView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        languagesView.alpha = 0
-        return languagesView
-    }()
-    //=======================================================================
-    
-    // MARK: - Created subViews iside 4 bottom views
-    // created views inside info views, bottom located
-    //-----------------------------------------------------------------------
     var yearCounterLabel: UILabel = {
         let yearLabel = UILabel()
         yearLabel.translatesAutoresizingMaskIntoConstraints = false
         yearLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
-        yearLabel.text = "- - -"
+        yearLabel.text = "07/2005"
         yearLabel.textAlignment = .center
         return yearLabel
     }()
@@ -142,9 +113,18 @@ class GitCardsTableViewCell: UITableViewCell {
         title.text = "Created in"
         title.textAlignment = .center
         return title
-    }()
+    }() // ---------------------------------------------------------------------
     
-     var repoCounterLabel: UILabel = {
+    // repoView with subViews --------------------------------------------------
+    var repoView: UIView = {
+        let repoView = UIView()
+        repoView.translatesAutoresizingMaskIntoConstraints = false
+        repoView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        repoView.alpha = 0
+        return repoView
+    }()
+
+    var repoCounterLabel: UILabel = {
         let counter = UILabel()
         counter.translatesAutoresizingMaskIntoConstraints = false
         counter.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
@@ -153,15 +133,24 @@ class GitCardsTableViewCell: UITableViewCell {
         return counter
     }()
     
-    var titlePepoLabel: UILabel = {
+    var titleRepoLabel: UILabel = {
         let nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         nameLabel.text = "Repository"
         nameLabel.textAlignment = .center
         return nameLabel
-    }()
+    }() // ---------------------------------------------------------------------
 
+    // strarsView with subViews ------------------------------------------------
+    var starsView: UIView = {
+        let starsView = UIView()
+        starsView.translatesAutoresizingMaskIntoConstraints = false
+        starsView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        starsView.alpha = 0
+        return starsView
+    }()
+    
     var starsCounterLabel: UILabel = {
         let name = UILabel()
         name.translatesAutoresizingMaskIntoConstraints = false
@@ -178,6 +167,15 @@ class GitCardsTableViewCell: UITableViewCell {
         nameLabel.text = "★"
         nameLabel.textAlignment = .center
         return nameLabel
+    }() // ------------------------------------------------------------------
+    
+    // profLanguagesView with subViews --------------------------------------
+    var profLanguagesView: UIView = {
+        let languagesView = UIView()
+        languagesView.translatesAutoresizingMaskIntoConstraints = false
+        languagesView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        languagesView.alpha = 0
+        return languagesView
     }()
     
     var counterProfLanguagesLabel: UILabel = {
@@ -196,9 +194,8 @@ class GitCardsTableViewCell: UITableViewCell {
         titleLang.text = "DevLang's"
         titleLang.textAlignment = .center
         return titleLang
-    }()
-    //-----------------------------------------------------------------------
-    
+    }() //===================================================================
+
     
     // MARK: - Layout all views
     // set layout
@@ -207,48 +204,49 @@ class GitCardsTableViewCell: UITableViewCell {
         
         self.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
         // define some properties to happen setup constraints
-        let defaultIndent: CGFloat = 16
+        let indentDefault: CGFloat = 16
+        let indentBetweenSubViews: CGFloat = 3
         let heightInfoView: CGFloat = 60
         let heightInfoSubView: CGFloat = 40
-        let calculatedWidth: CGFloat = (self.frame.width - defaultIndent * 7) / 4
+        let calculatedWidth: CGFloat = (self.frame.width - (indentDefault * 4) - (indentBetweenSubViews * 3)) / 4
         
         // MARK: - Layout basisView with subviews
         // setup basis view, covered cell content view -----------------------------------------
         contentView.addSubview(basisViewOfCard)
-        basisViewOfCard.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: defaultIndent).isActive = true
+        basisViewOfCard.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: indentDefault).isActive = true
         basisViewOfCard.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
-        basisViewOfCard.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -defaultIndent).isActive = true
+        basisViewOfCard.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -indentDefault).isActive = true
         basisViewOfCard.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
         
         // attach to left iconView on basic view
         basisViewOfCard.addSubview(iconView)
-        iconView.leftAnchor.constraint(equalTo: basisViewOfCard.leftAnchor, constant: defaultIndent).isActive = true
-        iconView.topAnchor.constraint(equalTo: basisViewOfCard.topAnchor, constant: defaultIndent).isActive = true
+        iconView.leftAnchor.constraint(equalTo: basisViewOfCard.leftAnchor, constant: indentDefault).isActive = true
+        iconView.topAnchor.constraint(equalTo: basisViewOfCard.topAnchor, constant: indentDefault).isActive = true
         iconView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         iconView.widthAnchor.constraint(equalToConstant: 100).isActive = true
         
         // attach nameLabel on basis view
         basisViewOfCard.addSubview(nameLabel)
-        nameLabel.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: defaultIndent).isActive = true
+        nameLabel.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: indentDefault).isActive = true
         nameLabel.topAnchor.constraint(equalTo: basisViewOfCard.topAnchor).isActive = true
-        nameLabel.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: -defaultIndent).isActive = true
+        nameLabel.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: 0).isActive = true
         nameLabel.heightAnchor.constraint(equalToConstant: heightInfoView).isActive = true
         
         // attach decarationLine on basis view
         basisViewOfCard.addSubview(decorationSolidLineView)
-        decorationSolidLineView.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: defaultIndent).isActive = true
-        decorationSolidLineView.rightAnchor.constraint(equalTo: nameLabel.rightAnchor).isActive = true
-        decorationSolidLineView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: -10).isActive = true
+        decorationSolidLineView.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: indentDefault).isActive = true
+        decorationSolidLineView.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: -indentDefault).isActive = true
+        decorationSolidLineView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: -indentDefault).isActive = true
         decorationSolidLineView.heightAnchor.constraint(equalToConstant: 3).isActive = true
         // -------------------------------------------------------------------------------------
         
         // MARK: - Layout companyView with subviews
         // setup company view ------------------------------------------------------------------
         basisViewOfCard.addSubview(companyView)
-        companyView.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: defaultIndent).isActive = true
-        companyView.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: -defaultIndent).isActive = true
+        companyView.leftAnchor.constraint(equalTo: iconView.rightAnchor, constant: indentDefault).isActive = true
+        companyView.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: -indentDefault).isActive = true
         companyView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
-        companyView.heightAnchor.constraint(equalToConstant: defaultIndent).isActive = true
+        companyView.heightAnchor.constraint(equalToConstant: indentDefault).isActive = true
         
         // attach titleCompanyLabel on companyView
         companyView.addSubview(titleCompanyLabel)
@@ -268,10 +266,10 @@ class GitCardsTableViewCell: UITableViewCell {
         // MARK: - Layout createdYearView with subviews
         // setup createdInView ------------------------------------------------------------------
         basisViewOfCard.addSubview(yearCreatedView)
-        yearCreatedView.leftAnchor.constraint(equalTo: basisViewOfCard.leftAnchor, constant: defaultIndent).isActive = true
+        yearCreatedView.leftAnchor.constraint(equalTo: basisViewOfCard.leftAnchor, constant: indentDefault).isActive = true
         yearCreatedView.bottomAnchor.constraint(equalTo: basisViewOfCard.bottomAnchor, constant: -6).isActive = true
         yearCreatedView.heightAnchor.constraint(equalToConstant: heightInfoView).isActive = true
-        yearCreatedView.widthAnchor.constraint(equalToConstant: (self.frame.width - defaultIndent * 7) / 4).isActive = true
+        yearCreatedView.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         
         // attach numbersOfYearLabel
         yearCreatedView.addSubview(yearCounterLabel)
@@ -291,7 +289,7 @@ class GitCardsTableViewCell: UITableViewCell {
         // MARK: - Layout repoView with subviews
         // setup repoView ---------------------------------------------------------------------
         basisViewOfCard.addSubview(repoView)
-        repoView.leftAnchor.constraint(equalTo: yearCreatedView.rightAnchor, constant: defaultIndent).isActive = true
+        repoView.leftAnchor.constraint(equalTo: yearCreatedView.rightAnchor, constant: indentBetweenSubViews).isActive = true
         repoView.bottomAnchor.constraint(equalTo: basisViewOfCard.bottomAnchor, constant: -6).isActive = true
         repoView.heightAnchor.constraint(equalToConstant: heightInfoView).isActive = true
         repoView.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
@@ -304,20 +302,20 @@ class GitCardsTableViewCell: UITableViewCell {
         repoCounterLabel.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         
         // attach repoNameLabel on repoView
-        repoView.addSubview(titlePepoLabel)
-        titlePepoLabel.leftAnchor.constraint(equalTo: repoView.leftAnchor).isActive = true
-        titlePepoLabel.bottomAnchor.constraint(equalTo: repoView.bottomAnchor).isActive = true
-        titlePepoLabel.heightAnchor.constraint(equalToConstant: heightInfoView - heightInfoSubView).isActive = true
-        titlePepoLabel.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
+        repoView.addSubview(titleRepoLabel)
+        titleRepoLabel.leftAnchor.constraint(equalTo: repoView.leftAnchor).isActive = true
+        titleRepoLabel.bottomAnchor.constraint(equalTo: repoView.bottomAnchor).isActive = true
+        titleRepoLabel.heightAnchor.constraint(equalToConstant: heightInfoView - heightInfoSubView).isActive = true
+        titleRepoLabel.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         //---------------------------------------------------------------------------------------
         
         // MARK: - Layout companyView with subviews
         // setup companyView --------------------------------------------------------------------
         basisViewOfCard.addSubview(starsView)
-        starsView.leftAnchor.constraint(equalTo: titlePepoLabel.rightAnchor, constant: defaultIndent).isActive = true
+        starsView.leftAnchor.constraint(equalTo: titleRepoLabel.rightAnchor, constant: indentBetweenSubViews).isActive = true
         starsView.bottomAnchor.constraint(equalTo: basisViewOfCard.bottomAnchor, constant: -6).isActive = true
         starsView.heightAnchor.constraint(equalToConstant: heightInfoView).isActive = true
-        starsView.widthAnchor.constraint(equalToConstant: (self.frame.width - defaultIndent * 7) / 4).isActive = true
+        starsView.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         
         // attach nameOfCompanyLabel
         starsView.addSubview(starsCounterLabel)
@@ -337,10 +335,11 @@ class GitCardsTableViewCell: UITableViewCell {
         // MARK: - Layout profLanguageView with subviews
         // setup profLanguageView ---------------------------------------------------------------
         basisViewOfCard.addSubview(profLanguagesView)
-        profLanguagesView.leftAnchor.constraint(equalTo: starsView.rightAnchor, constant: defaultIndent).isActive = true
+        profLanguagesView.leftAnchor.constraint(equalTo: starsView.rightAnchor, constant: indentBetweenSubViews).isActive = true
         profLanguagesView.bottomAnchor.constraint(equalTo: basisViewOfCard.bottomAnchor, constant: -6).isActive = true
+        profLanguagesView.rightAnchor.constraint(equalTo: basisViewOfCard.rightAnchor, constant: -indentDefault).isActive = true
         profLanguagesView.heightAnchor.constraint(equalToConstant: heightInfoView).isActive = true
-        profLanguagesView.widthAnchor.constraint(equalToConstant: (self.frame.width - defaultIndent * 7) / 4).isActive = true
+        profLanguagesView.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         
         // attach languagesCounterLabel on languagesView
         profLanguagesView.addSubview(counterProfLanguagesLabel)
@@ -358,46 +357,116 @@ class GitCardsTableViewCell: UITableViewCell {
         //---------------------------------------------------------------------------------------
     }
     
+    //var repoDetailOfSearchingResult: SearchReposQlQuery.Data.Search?
+    //var user: GetUserQlQuery.Data.User?
+    
     // defined update cell func
-    func updateCell(withData data: GetUserQlQuery.Data.User, forIndexPath indexPath: IndexPath) {
-        let imageLink = URL(string: data.avatarUrl)!
-        iconView.sd_setImage(with: imageLink, completed: nil)
-        nameLabel.text = data.repositories.nodes?[indexPath.row]?.name
-        nameCompanyLabel.text = data.repositories.nodes?[indexPath.row]?.createdAt
+    func updateCell<T>(withData data: T, withScopeBarVariant scopeBarVariant: String, forIndexPath indexPath: IndexPath) {
+        // ------------------------------------------------------------------------
+        if scopeBarVariant == "Repositories" {
+            let repoDetailOfSearchingResult = data as! SearchReposQlQuery.Data.Search
+            let repo = repoDetailOfSearchingResult.nodes?[indexPath.row]?.fragments.repositoryDetail
+            let imageLink = URL(string: repo?.owner.avatarUrl ?? "")!
+            // take (MM/YYYY) from date
+            let year = String(repo?.createdAt.dropFirst(0).prefix(4) ?? "")
+            let month = String(repo?.createdAt.dropFirst(5).prefix(2) ?? "")
+            
+            iconView.sd_setImage(with: imageLink, completed: nil)
+            nameLabel.text = repo?.name
+            nameCompanyLabel.text = repo?.owner.login
+            yearCounterLabel.text = month + "/" + year
+            repoCounterLabel.text = repo?.isPrivate == true ? "YES" : "NO"
+            starsCounterLabel.text = "\(repo?.stargazers.totalCount ?? 0)"
+            counterProfLanguagesLabel.text = (repo?.primaryLanguage?.name != nil && repo?.primaryLanguage?.name != "") ? repo?.primaryLanguage?.name : "- - -"
+        // ------------------------------------------------------------------------
+        } else if scopeBarVariant == "Users" {
+            let usersProfile = data as! SearchUsersQlQuery.Data.Search
+            var userDetails = usersProfile.nodes?[indexPath.row]?.fragments.userDetail
+            let imageLink = URL(string: userDetails?.avatarUrl ?? "")
+            // take (MM/YYYY) from date
+            let year = String(userDetails?.createdAt.dropFirst(0).prefix(4) ?? "")
+            let month = String(userDetails?.createdAt.dropFirst(5).prefix(2) ?? "")
+            
+            iconView.sd_setImage(with: imageLink, completed: nil)
+            nameLabel.text = userDetails?.login
+            nameCompanyLabel.text = (userDetails?.company != nil && userDetails?.company != "") ? userDetails?.company : "- - - - -"
+            yearCounterLabel.text = month + "/" + year
+            //starsCounterLabel.text = "\(starsCounter(fromUserProfile: usersProfile))"
+            repoCounterLabel.text = "\(userDetails?.repositories.totalCount ?? 0)"
+        // ------------------------------------------------------------------------
+        } else if scopeBarVariant == "Organizations" {
+            
+        }
+
     }
     
-    // define labels animator
-    func animateViewsInsideCell(completionHandler: @escaping (Bool) -> Void) {
+    // define set labels title func
+    func setLabelsTitle(withSearchScopeBarVariant scopeBarVariant: String) {
+        
+        // set titles to labels based on searchScopeBar variant
+        if scopeBarVariant == "Repositories" {
+            iconView.image = UIImage(named: "EmptyFace.png")
+            titleCompanyLabel.text = "Owner:"
+            titleYearLabel.text = "Created in"
+            titleRepoLabel.text = "isPrivate"
+            titleStarsLabel.text = "★"
+            titleProfLanguagesLabel.text = "Language"
+            nameLabel.text = "- - - - -"
+            nameCompanyLabel.text = "- - - - -"
+            yearCounterLabel.text = "- - -"
+            repoCounterLabel.text = "- - -"
+            starsCounterLabel.text = "- - -"
+            counterProfLanguagesLabel.text = "- - -"
+            
+        } else if scopeBarVariant == "Users" {
+            iconView.image = UIImage(named: "EmptyFace.png")
+            titleCompanyLabel.text = "Company:"
+            titleYearLabel.text = "Created in"
+            titleRepoLabel.text = "Repositories"
+            titleStarsLabel.text = "★"
+            titleProfLanguagesLabel.text = "Languages"
+            nameLabel.text = "- - - - -"
+            nameCompanyLabel.text = "- - - - -"
+            yearCounterLabel.text = "- - -"
+            repoCounterLabel.text = "- - -"
+            starsCounterLabel.text = "- - -"
+            counterProfLanguagesLabel.text = "- - -"
+            
+        } else if scopeBarVariant == "Organizations" {
+            iconView.image = UIImage(named: "EmptyFace.png")
+            titleCompanyLabel.text = "WebSite:"
+            titleYearLabel.text = "Created in:"
+            titleRepoLabel.text = "Repositories"
+            titleStarsLabel.text = "Members"
+            titleProfLanguagesLabel.text = "???"
+            nameLabel.text = "- - - - -"
+            nameCompanyLabel.text = "- - - - -"
+            yearCounterLabel.text = "- - -"
+            repoCounterLabel.text = "- - -"
+            starsCounterLabel.text = "- - -"
+            counterProfLanguagesLabel.text = "- - -"
+            
+        }
         
         // set font for some labels
-        [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 22, weight: UIFont.Weight.thin) }
-        [titleCompanyLabel, titleYearLabel, titlePepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.thin)}
+        [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 20, weight: UIFont.Weight.thin) }
+        [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.thin)}
+    }
+    
+    /*
+    private func starsCounter(fromUserProfile repositories: SearchUsersQlQuery.Data.Search) -> Int {
+        var stars = 0
+        guard let repositories = repositories.nodes else { return stars }
         
-        // define animation cellSubViews func
-        func animatorCellSubViews(forView inputedView: UIView, withDelay inputedDelay: Double) {
-            UIView.animate(withDuration: 1, delay: inputedDelay, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                inputedView.frame = CGRect(x: -400, y: 0, width: 0, height: 0)
-                inputedView.alpha = 1
-            })
+        for repositori in repositories {
+            guard let repo = repositori?.fragments.userDetail?.starredRepositories.nodes else { return stars }
+                for r in repo {
+                    stars += (r?.fragments.repositoryDetail.stargazers.totalCount)!
+                }
+            //}
         }
-
-        // animate views inside cell
-        animatorCellSubViews(forView: iconView, withDelay: 0.5)
-        animatorCellSubViews(forView: decorationSolidLineView, withDelay: 0.5)
-        animatorCellSubViews(forView: nameLabel, withDelay: 1.0)
-        animatorCellSubViews(forView: companyView, withDelay: 1.5)
-        animatorCellSubViews(forView: yearCreatedView, withDelay: 2.0)
-        animatorCellSubViews(forView: repoView, withDelay: 2.1)
-        animatorCellSubViews(forView: starsView, withDelay: 2.2)
-
-        // animate view8 inside the cell
-        UIView.animate(withDuration: 1, delay: 2.3, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-            self.profLanguagesView.frame = CGRect(x: -100, y: 0, width: 0, height: 0)
-            self.profLanguagesView.alpha = 1
-        }) { _ in
-            completionHandler(true)
-        }
-    } // END animation func -------------------------------------------------------------------------------------------------
+        return stars
+    } */
 
 }
 
