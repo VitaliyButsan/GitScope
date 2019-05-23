@@ -10,26 +10,36 @@ import UIKit
 import Alamofire
 import Apollo
 
-class GitCardsTableViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate {
+class GitCardsTableViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate, UITextFieldDelegate{
     
     private let cellId = "Cell"
     private var greatherIndex = -1
     private var inputSearchText = ""
     private var scopeBarDefaultTitle = "Repositories"
-    private var searchController: UISearchController?
+    private var searchController = UISearchController(searchResultsController: nil)
     private var animationsIsLaunching = false
     private var searchBarIsLaunching = false
     private var defaultCellsAmount = 10
-    
+    private var limitCounter = 0
+
     // establish custom titleLabel
-    private var myTitleView: UILabel = {
-        let myTitle = UILabel.init(frame: CGRect(x: 0, y: 0, width: 200, height: 30))
+    private var customTitleView: UILabel = {
+        let myTitle = UILabel.init(frame: CGRect(x: 0, y: 0, width: 240, height: 30))
         myTitle.textAlignment = .center
         myTitle.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         myTitle.text = "<  🔍  >"
         return myTitle
     }()
 
+    // label for limit button
+    private var limitButtonLabel: UILabel = {
+        let limitLabel = UILabel()
+        limitLabel.textAlignment = .center
+        limitLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        limitLabel.textColor = #colorLiteral(red: 0, green: 0.47905761, blue: 1, alpha: 1)
+        limitLabel.text = "Limit"
+        return limitLabel
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,18 +48,27 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         view.backgroundColor = #colorLiteral(red: 0.9082065659, green: 0.9707477169, blue: 0.9541269933, alpha: 1)
         tableView.allowsSelection = false
         tableView.separatorStyle = .none
-        navigationItem.titleView = myTitleView
-        MyDataBase.shared.getLimitStatus()
-        
+        navigationItem.titleView = customTitleView
+
         // register the Cell
         tableView.register(GitCardsTableViewCell.self, forCellReuseIdentifier: cellId)
-        // call navBarGradient func
+        // navBarGradient setup
         setNavBarGradient()
-        // call searchController setup
+        // searchController setup
         setupSearchController()
+        // navigationBarItems setup
+        setupNavigationBarItems()
+        
+        // get limit requests status
+        MyDataBase.shared.getData(withSearchInput: "", forScopeBarVariant: "getLimitStatus") { isReceived in
+            if isReceived {
+                self.limitCounter = MyDataBase.shared.limitQueryesStatus
+            } else {
+                self.repeaterTitle(withText: "<  Limit not received!  >", withTextColor: #colorLiteral(red: 0.7184983492, green: 0.07270544022, blue: 0.1745591164, alpha: 1))
+            }
+        }
     }
-    
-    
+
     // define setNavBarGradient func
     private func setNavBarGradient() {
         
@@ -71,24 +90,55 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             navigationBar.setBackgroundImage(image, for: .default)
         }
     }
+    
+    // setup limit button
+    private func setupNavigationBarItems() {
+        let limitButton = UIButton(type: .system)
+        limitButton.frame = CGRect(x: 0, y: 0, width: 40, height: 34)
+        limitButton.addTarget(self, action: #selector(limitButtonHandler), for: .touchUpInside)
+        limitButtonLabel.frame = CGRect(x: -70, y: 0, width: 40, height: 34)
+        limitButton.addSubview(limitButtonLabel)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: limitButton)
+    }
 
+    // limit button handler
+    @objc private func limitButtonHandler() {
+        repeaterTitle(withText: "<  Your limit: \(limitCounter) requests  >", withTextColor: #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1))
+    }
+    
+    // repeater titleLabel animation func
+    @objc private func repeaterTitle(withText titleText: String, withTextColor textColor: UIColor) {
+        animatorTitleLabel(withText: titleText, textColor: textColor, withDelay: 0.0)
+        _ = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(repeatTitleLabelMove), userInfo: nil, repeats: false)
+    }
+    
+    // repeat titleLabel move
+    @objc func repeatTitleLabelMove() {
+        animatorTitleLabel(withText: "<  " + scopeBarDefaultTitle + "🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)
+    }
+    
+    // setup searchController
     private func setupSearchController() {
-        searchController = UISearchController(searchResultsController: nil)
-        searchController?.searchBar.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
-        searchController?.searchBar.placeholder = "Find on GitHub"
-        searchController?.searchBar.scopeButtonTitles = ["Repositories", "Users", "Organizations"]
-        searchController?.searchBar.textField?.addTarget(self, action: #selector(getData), for: UIControl.Event.primaryActionTriggered)
-        searchController?.hidesNavigationBarDuringPresentation = false
-        searchController?.searchResultsUpdater = self
-        searchController?.searchBar.delegate = self
-        searchController?.obscuresBackgroundDuringPresentation = false // ?
-        searchController?.dimsBackgroundDuringPresentation = false // ?
+        searchController.searchBar.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
+        searchController.searchBar.placeholder = "Find on GitHub"
+        searchController.searchBar.scopeButtonTitles = ["Repositories", "Users", "Organizations"]
+        searchController.searchBar.textField?.addTarget(self, action: #selector(getData), for: UIControl.Event.primaryActionTriggered)
+        searchController.searchBar.textField?.clearButtonMode = .never
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+        searchController.searchBar.textField?.textColor = .red
+        searchController.obscuresBackgroundDuringPresentation = false // ?
+        searchController.dimsBackgroundDuringPresentation = false
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.searchController = searchController
         definesPresentationContext = true
     }
 
+    // get data
     @objc func getData() {
+        searchController.searchBar.isLoading = true
+        
         // get Users
         MyDataBase.shared.getData(withSearchInput: inputSearchText, forScopeBarVariant: scopeBarDefaultTitle) { isCompleted in
             if isCompleted {
@@ -96,17 +146,26 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
                 DispatchQueue.main.async {
                     self.defaultCellsAmount = MyDataBase.shared.repositoriesContainer?.nodes?.count ?? self.defaultCellsAmount
                     self.defaultCellsAmount = MyDataBase.shared.userContainer?.nodes?.count ?? self.defaultCellsAmount
+                    self.defaultCellsAmount = MyDataBase.shared.organizationsContainer?.nodes?.count ?? self.defaultCellsAmount
+                    self.searchController.searchBar.isLoading = false
                     self.tableView.reloadData()
                 }
             } else {
                 print("ERROR: NO DATA!")
-                // Alert()
+                self.searchController.searchBar.isLoading = false
+                self.animatorTitleLabel(withText: "<  No" + " \(self.scopeBarDefaultTitle) " + "Data!  >", textColor: #colorLiteral(red: 0.8219781091, green: 0.03732189472, blue: 0.1942074423, alpha: 1), withDelay: 0.5)
             }
         }
         // turn ON animations flag
         animationsIsLaunching = false
     }
 
+    
+    // cancel button responder
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.isLoading = false
+        animatorTitleLabel(withText: "<  " + "\(scopeBarDefaultTitle)" + "🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)
+    }
     
     // selected cell responder
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -125,6 +184,8 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             return repositories.nodes?.count ?? defaultCellsAmount
         } else if let users = MyDataBase.shared.userContainer {
             return users.nodes?.count ?? defaultCellsAmount
+        } else if let organizations = MyDataBase.shared.organizationsContainer {
+            return organizations.nodes?.count ?? defaultCellsAmount
         } else {
             return defaultCellsAmount
         }
@@ -133,11 +194,11 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     // reuse the cell --------------------------------------------------------------------------------------------------
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! GitCardsTableViewCell
-  
+        
         // set titles based on searchScopeBar variant
         cell.setLabelsTitle(withSearchScopeBarVariant: scopeBarDefaultTitle)
         
-        // update cell with data
+        // transfer data into the cell
         if let data = MyDataBase.shared.repositoriesContainer {
             cell.updateCell(withData: data, withScopeBarVariant: scopeBarDefaultTitle, forIndexPath: indexPath)
         } else if let data =  MyDataBase.shared.userContainer {
@@ -146,10 +207,20 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             cell.updateCell(withData: data, withScopeBarVariant: scopeBarDefaultTitle, forIndexPath: indexPath)
         }
         
-        print(greatherIndex, indexPath.row)
         // animate views inside cell
         if !animationsIsLaunching, defaultCellsAmount > 0 {
-            animateViewsInsideCell(iconView: cell.iconView, decorationSolidLineView: cell.decorationSolidLineView, nameLabel: cell.nameLabel, companyView: cell.companyView, yearCreatedView: cell.yearCreatedView, repoView: cell.repoView, starsView: cell.starsView, profLanguagesView: cell.profLanguagesView)
+            cell.animateViewsInsideCell { isAnimated in
+                // launch searchBar
+                if !self.searchBarIsLaunching {
+                    DispatchQueue.main.async {
+                        self.searchController.searchBar.becomeFirstResponder()
+                        self.searchBarIsLaunching = true
+                        self.animationsIsLaunching = true
+                    }
+                    // animating titleLabel
+                    self.animatorTitleLabel(withText: "<  \(self.scopeBarDefaultTitle) 🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.5)
+                }
+            }
             
             defaultCellsAmount -= 1
             if indexPath.row > greatherIndex {
@@ -160,72 +231,35 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         return cell
     } // ----------------------------------------------------------------------------------------------------------------
 
-    
-    // MARK: - Animation func
-    // define labels animator --------------------------------------------------------------------------
-    func animateViewsInsideCell(iconView: UIView, decorationSolidLineView: UIView, nameLabel: UIView, companyView: UIView, yearCreatedView: UIView, repoView: UIView, starsView: UIView, profLanguagesView: UIView) {
-
-        // define animation cellSubViews func
-        func animatorCellSubViews(forView inputedView: UIView, withDelay inputedDelay: Double) {
-            UIView.animate(withDuration: 1, delay: inputedDelay, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                inputedView.frame = CGRect(x: -400, y: 0, width: 0, height: 0)
-                inputedView.alpha = 1
-            })
-        }
-        
-        // animate views inside cell
-        animatorCellSubViews(forView: iconView, withDelay: 0.5)
-        animatorCellSubViews(forView: decorationSolidLineView, withDelay: 0.5)
-        animatorCellSubViews(forView: nameLabel, withDelay: 1.0)
-        animatorCellSubViews(forView: companyView, withDelay: 1.5)
-        animatorCellSubViews(forView: yearCreatedView, withDelay: 2.0)
-        animatorCellSubViews(forView: repoView, withDelay: 2.1)
-        animatorCellSubViews(forView: starsView, withDelay: 2.2)
-        
-        // animate profLanguagesView inside the cell
-        UIView.animate(withDuration: 1, delay: 2.3, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-            profLanguagesView.frame = CGRect(x: -100, y: 0, width: 0, height: 0)
-            profLanguagesView.alpha = 1
-        }) { _ in
-            // launch searchBar
-            if !self.searchBarIsLaunching {
-                DispatchQueue.main.async {
-                    self.searchController?.searchBar.becomeFirstResponder()
-                    self.searchBarIsLaunching = true
-                    self.animationsIsLaunching = true
-                }
-                // animating titleLabel
-                self.animatorTitleLabel(withText: "<  \(self.scopeBarDefaultTitle) 🔍  >", withDelay: 0.5)
-            }
-        }
-    } // END animation func -------------------------------------------------------------------
-
-    
+  
     // define inamation titleLabel func
-    private func animatorTitleLabel(withText inputText: String, withDelay inputedDelay: Double) {
+    private func animatorTitleLabel(withText inputText: String, textColor inputColor: UIColor, withDelay inputedDelay: Double) {
+        searchController.searchBar.textField?.textColor = inputColor
         // (up) animate titleLabel
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseIn, animations: {
-            self.myTitleView.frame = CGRect(x: 0, y: -60, width: 200, height: 30)
+            self.customTitleView.frame = CGRect(x: 0, y: -90, width: 240, height: 30)
+            self.limitButtonLabel.frame = CGRect(x: 0, y: 0, width: 44, height: 34)
         }) { _ in
             // (down) set title.text and reverse animate titleLabel
-            self.myTitleView.text = inputText
             UIView.animate(withDuration: 0.5, delay: inputedDelay, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseIn, animations: {
-                self.myTitleView.frame = CGRect(x: 0, y: 0, width: 200, height: 30)
+                self.customTitleView.frame = CGRect(x: 0, y: 0, width: 240, height: 30)
+                self.customTitleView.text = inputText
+                self.customTitleView.textColor = inputColor
             })
         }
     }
     
     // scope bar responder
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
-        scopeBarDefaultTitle = searchBar.scopeButtonTitles![selectedScope]
-        // animate titleLabel
-        animatorTitleLabel(withText: "<  " + scopeBarDefaultTitle + " 🔍  >", withDelay: 0.0)
-        searchBar.text = ""
-        searchBar.becomeFirstResponder()
-        
         MyDataBase.shared.repositoriesContainer = nil
         MyDataBase.shared.userContainer = nil
         MyDataBase.shared.organizationsContainer = nil
+        
+        scopeBarDefaultTitle = searchBar.scopeButtonTitles![selectedScope]
+        // animate titleLabel with scopeBar title
+        self.animatorTitleLabel(withText: "<  " + self.scopeBarDefaultTitle + " 🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)
+        searchBar.text = ""
+        searchBar.becomeFirstResponder()
         
         animationsIsLaunching = false
         greatherIndex = -1
@@ -234,7 +268,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         
     }
     
-    // input search responder
+    // input searching responder
     func updateSearchResults(for searchController: UISearchController) {
         // save input text
         inputSearchText = searchController.searchBar.text?.trimmingCharacters(in: .whitespaces).lowercased() ?? ""
@@ -242,10 +276,40 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     
 }
 
-// exdended UISearchBar to textField
+// extended UISearchBar
 extension UISearchBar {
-    var textField: UITextField? {
+    
+    // Access to textField
+    public var textField: UITextField? {
         let subViews = subviews.flatMap { $0.subviews }
         return (subViews.filter { $0 is UITextField }).first as? UITextField
     }
+    
+    //  Create activity indicator
+    public var activityIndicator: UIActivityIndicatorView? {
+        return textField?.leftView?.subviews.compactMap{ $0 as? UIActivityIndicatorView }.first
+    }
+    
+    //  on/off activity indicator
+    var isLoading: Bool {
+        get {
+            return activityIndicator != nil
+        } set {
+            if newValue {
+                // Set up activity indicator
+                if activityIndicator == nil {
+                    let newActivityIndicator = UIActivityIndicatorView(style: .gray)
+                    newActivityIndicator.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
+                    newActivityIndicator.startAnimating()
+                    newActivityIndicator.backgroundColor = #colorLiteral(red: 0.7783739567, green: 0.9003444314, blue: 0.8740741014, alpha: 1)
+                    textField?.leftView?.addSubview(newActivityIndicator)
+                    let leftViewSize = textField?.leftView?.frame.size ?? CGSize.zero
+                    newActivityIndicator.center = CGPoint(x: leftViewSize.width/2, y: leftViewSize.height/2)
+                }
+            } else {
+                activityIndicator?.removeFromSuperview()
+            }
+        }
+    }
+    
 }

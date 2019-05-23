@@ -81,7 +81,7 @@ class GitCardsTableViewCell: UITableViewCell {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         nameLabel.text = "- - - - -"
-        nameLabel.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.medium)
+        nameLabel.font = UIFont.systemFont(ofSize: 13, weight: UIFont.Weight.medium)
         return nameLabel
     }() // ====================================================================
     
@@ -205,7 +205,7 @@ class GitCardsTableViewCell: UITableViewCell {
         self.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
         // define some properties to happen setup constraints
         let indentDefault: CGFloat = 16
-        let indentBetweenSubViews: CGFloat = 3
+        let indentBetweenSubViews: CGFloat = 0
         let heightInfoView: CGFloat = 60
         let heightInfoSubView: CGFloat = 40
         let calculatedWidth: CGFloat = (self.frame.width - (indentDefault * 4) - (indentBetweenSubViews * 3)) / 4
@@ -253,7 +253,7 @@ class GitCardsTableViewCell: UITableViewCell {
         titleCompanyLabel.leftAnchor.constraint(equalTo: companyView.leftAnchor).isActive = true
         titleCompanyLabel.topAnchor.constraint(equalTo: companyView.topAnchor).isActive = true
         titleCompanyLabel.heightAnchor.constraint(equalTo: companyView.heightAnchor).isActive = true
-        titleCompanyLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
+        titleCompanyLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: .horizontal)
         
         // attach nameCompanyLabel on companyView
         companyView.addSubview(nameCompanyLabel)
@@ -261,6 +261,7 @@ class GitCardsTableViewCell: UITableViewCell {
         nameCompanyLabel.topAnchor.constraint(equalTo: companyView.topAnchor).isActive = true
         nameCompanyLabel.rightAnchor.constraint(equalTo: companyView.rightAnchor).isActive = true
         nameCompanyLabel.heightAnchor.constraint(equalTo: companyView.heightAnchor).isActive = true
+        nameCompanyLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: .horizontal)
         //---------------------------------------------------------------------------------------
 
         // MARK: - Layout createdYearView with subviews
@@ -356,59 +357,144 @@ class GitCardsTableViewCell: UITableViewCell {
         titleProfLanguagesLabel.widthAnchor.constraint(equalToConstant: calculatedWidth).isActive = true
         //---------------------------------------------------------------------------------------
     }
+ 
     
-    //var repoDetailOfSearchingResult: SearchReposQlQuery.Data.Search?
-    //var user: GetUserQlQuery.Data.User?
+    // MARK: - Animation func
+    // define labels animator --------------------------------------------------------------------------
+    func animateViewsInsideCell(completionHanbler: @escaping (Bool) -> Void) {
+        
+        // define animation cellSubViews func
+        func animatorCellSubViews(forView inputedView: UIView, withDelay inputedDelay: Double) {
+            UIView.animate(withDuration: 1, delay: inputedDelay, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                inputedView.frame = CGRect(x: -400, y: 0, width: 0, height: 0)
+                inputedView.alpha = 1
+            })
+        }
+        
+        // animate subViews inside cell
+        animatorCellSubViews(forView: iconView, withDelay: 0.5)
+        animatorCellSubViews(forView: decorationSolidLineView, withDelay: 0.5)
+        animatorCellSubViews(forView: nameLabel, withDelay: 1.0)
+        animatorCellSubViews(forView: companyView, withDelay: 1.5)
+        animatorCellSubViews(forView: yearCreatedView, withDelay: 2.0)
+        animatorCellSubViews(forView: repoView, withDelay: 2.1)
+        animatorCellSubViews(forView: starsView, withDelay: 2.2)
+        
+        // animate profLanguagesView inside the cell
+        UIView.animate(withDuration: 1, delay: 2.3, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.profLanguagesView.frame = CGRect(x: -100, y: 0, width: 0, height: 0)
+            self.profLanguagesView.alpha = 1
+        }) { _ in
+            completionHanbler(true)
+        }
+    } // END animation func -------------------------------------------------------------------
     
-    // defined update cell func
+    
+    // defined update cell func ===============================================================
     func updateCell<T>(withData data: T, withScopeBarVariant scopeBarVariant: String, forIndexPath indexPath: IndexPath) {
         // ------------------------------------------------------------------------
         if scopeBarVariant == "Repositories" {
-            let repoDetailOfSearchingResult = data as! SearchReposQlQuery.Data.Search
+            guard let repoDetailOfSearchingResult = data as? SearchGitReposQlQuery.Data.Search else { return }
             let repo = repoDetailOfSearchingResult.nodes?[indexPath.row]?.fragments.repositoryDetail
             let imageLink = URL(string: repo?.owner.avatarUrl ?? "")!
-            // take (MM/YYYY) from date
-            let year = String(repo?.createdAt.dropFirst(0).prefix(4) ?? "")
-            let month = String(repo?.createdAt.dropFirst(5).prefix(2) ?? "")
-            
+            // set values
             iconView.sd_setImage(with: imageLink, completed: nil)
             nameLabel.text = repo?.name
             nameCompanyLabel.text = repo?.owner.login
-            yearCounterLabel.text = month + "/" + year
-            repoCounterLabel.text = repo?.isPrivate == true ? "YES" : "NO"
+            yearCounterLabel.text = convertDate(fromISO_8601_UTC: repo?.createdAt ?? "", to: "MM/yyyy")
+            repoCounterLabel.text = convertDate(fromISO_8601_UTC: repo?.pushedAt ?? "", to: "dd/MM/yy")
             starsCounterLabel.text = "\(repo?.stargazers.totalCount ?? 0)"
             counterProfLanguagesLabel.text = (repo?.primaryLanguage?.name != nil && repo?.primaryLanguage?.name != "") ? repo?.primaryLanguage?.name : "- - -"
         // ------------------------------------------------------------------------
         } else if scopeBarVariant == "Users" {
-            let usersProfile = data as! SearchUsersQlQuery.Data.Search
+            guard let usersProfile = data as? SearchGitUsersQlQuery.Data.Search else { return }
             var userDetails = usersProfile.nodes?[indexPath.row]?.fragments.userDetail
             let imageLink = URL(string: userDetails?.avatarUrl ?? "")
-            // take (MM/YYYY) from date
-            let year = String(userDetails?.createdAt.dropFirst(0).prefix(4) ?? "")
-            let month = String(userDetails?.createdAt.dropFirst(5).prefix(2) ?? "")
-            
+            // set values
             iconView.sd_setImage(with: imageLink, completed: nil)
             nameLabel.text = userDetails?.login
             nameCompanyLabel.text = (userDetails?.company != nil && userDetails?.company != "") ? userDetails?.company : "- - - - -"
-            yearCounterLabel.text = month + "/" + year
-            //starsCounterLabel.text = "\(starsCounter(fromUserProfile: usersProfile))"
+            yearCounterLabel.text = convertDate(fromISO_8601_UTC: userDetails?.createdAt ?? "", to: "MM/yyyy")
             repoCounterLabel.text = "\(userDetails?.repositories.totalCount ?? 0)"
+            starsCounterLabel.text = "\(starsCounter(fromUserProfile: userDetails))"
+            counterProfLanguagesLabel.text = "\(languagesCounter(fromProfile: userDetails))"
         // ------------------------------------------------------------------------
         } else if scopeBarVariant == "Organizations" {
+            guard let orgProfile = data as? SearchGitOrgsQlQuery.Data.Search else { return }
+            var orgDetails = orgProfile.nodes?[indexPath.row]?.fragments.orgDetail
+            let imageLink = URL(string: orgDetails?.avatarUrl ?? "")
             
+            iconView.sd_setImage(with: imageLink, completed: nil)
+            nameLabel.text = orgDetails?.name
+            nameCompanyLabel.text = (orgDetails?.websiteUrl != nil && orgDetails?.websiteUrl != "") ? orgDetails?.websiteUrl : "- - - - -"
+            yearCounterLabel.text = orgDetails?.isVerified ?? false ? "Yes" : "No"
+            repoCounterLabel.text = "\(orgDetails?.repositories.totalCount ?? 0)"
+            starsCounterLabel.text = "\(orgDetails?.membersWithRole.totalCount ?? 0)"
+            counterProfLanguagesLabel.text = "\(languagesCounter(fromProfile: orgDetails))"
         }
 
+    } // =====================================================================================
+    
+    
+    // counter languages from profile
+    private func languagesCounter<T>(fromProfile profile: T) -> Int {
+        var languages = Set<String>()
+        
+        if let userProfile = profile as? UserDetail {
+            guard let repositories = userProfile.repositories.nodes else { return 0 }
+            for repo in repositories {
+                    languages.insert(repo?.primaryLanguage?.name ?? "")
+            }
+            
+        } else if let organizationProfile = profile as? OrgDetail {
+            guard let repositories = organizationProfile.repositories.nodes else { return 0}
+            for repo in repositories {
+                languages.insert(repo?.primaryLanguage?.name ?? "")
+            }
+        }
+        
+        let filteredLanguages = languages.filter { $0 != "" }
+        return filteredLanguages.count
+    }
+    
+    // counter stars of repositories, where user is owner
+    private func starsCounter(fromUserProfile userProfile: UserDetail?) -> Int {
+        var stars = 0
+        guard let repoNodes = userProfile?.repositories.nodes else { return 0 }
+        
+        for repoNode in repoNodes {
+            stars += (repoNode?.stargazers.totalCount)!
+        }
+        return stars
+    }
+    
+    // format date from ISO-8601_UTC to current dd/mm/yy
+    private func convertDate(fromISO_8601_UTC iso8601Str: String, to dateFormat: String) -> String? {
+        // -------------------------------
+        // https://nsdateformatter.com/
+        // -------------------------------
+        // iso8601 formatter
+        let iso8601DateFormatter = DateFormatter()
+        iso8601DateFormatter.calendar = Calendar(identifier: .iso8601)
+        iso8601DateFormatter.dateFormat = "yyyy-MM-dd'T'hh:mm:ssZ"
+        // custom formatter
+        let customDateFormatter = DateFormatter()
+        customDateFormatter.dateFormat = dateFormat
+        if let iso8601 = iso8601DateFormatter.date(from: iso8601Str) {
+            return customDateFormatter.string(from: iso8601)
+        } else {
+            return "- - -"
+        }
     }
     
     // define set labels title func
     func setLabelsTitle(withSearchScopeBarVariant scopeBarVariant: String) {
-        
         // set titles to labels based on searchScopeBar variant
         if scopeBarVariant == "Repositories" {
             iconView.image = UIImage(named: "EmptyFace.png")
-            titleCompanyLabel.text = "Owner:"
+            titleCompanyLabel.text = "Owner:  "
             titleYearLabel.text = "Created in"
-            titleRepoLabel.text = "isPrivate"
+            titleRepoLabel.text = "Last Push"
             titleStarsLabel.text = "★"
             titleProfLanguagesLabel.text = "Language"
             nameLabel.text = "- - - - -"
@@ -420,7 +506,7 @@ class GitCardsTableViewCell: UITableViewCell {
             
         } else if scopeBarVariant == "Users" {
             iconView.image = UIImage(named: "EmptyFace.png")
-            titleCompanyLabel.text = "Company:"
+            titleCompanyLabel.text = "Company:  "
             titleYearLabel.text = "Created in"
             titleRepoLabel.text = "Repositories"
             titleStarsLabel.text = "★"
@@ -431,14 +517,14 @@ class GitCardsTableViewCell: UITableViewCell {
             repoCounterLabel.text = "- - -"
             starsCounterLabel.text = "- - -"
             counterProfLanguagesLabel.text = "- - -"
-            
+
         } else if scopeBarVariant == "Organizations" {
             iconView.image = UIImage(named: "EmptyFace.png")
-            titleCompanyLabel.text = "WebSite:"
-            titleYearLabel.text = "Created in:"
+            titleCompanyLabel.text = "WebSite:  "
+            titleYearLabel.text = "isVerified"
             titleRepoLabel.text = "Repositories"
             titleStarsLabel.text = "Members"
-            titleProfLanguagesLabel.text = "???"
+            titleProfLanguagesLabel.text = "Languages"
             nameLabel.text = "- - - - -"
             nameCompanyLabel.text = "- - - - -"
             yearCounterLabel.text = "- - -"
@@ -453,20 +539,5 @@ class GitCardsTableViewCell: UITableViewCell {
         [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.thin)}
     }
     
-    /*
-    private func starsCounter(fromUserProfile repositories: SearchUsersQlQuery.Data.Search) -> Int {
-        var stars = 0
-        guard let repositories = repositories.nodes else { return stars }
-        
-        for repositori in repositories {
-            guard let repo = repositori?.fragments.userDetail?.starredRepositories.nodes else { return stars }
-                for r in repo {
-                    stars += (r?.fragments.repositoryDetail.stargazers.totalCount)!
-                }
-            //}
-        }
-        return stars
-    } */
-
 }
 

@@ -15,9 +15,10 @@ class MyDataBase {
     // singleton
     static let shared = MyDataBase()
     
-    var userContainer: SearchUsersQlQuery.Data.Search?
-    var repositoriesContainer: SearchReposQlQuery.Data.Search?
-    var organizationsContainer: GetGitOrgQlQuery.Data.Organization?
+    var userContainer: SearchGitUsersQlQuery.Data.Search?
+    var repositoriesContainer: SearchGitReposQlQuery.Data.Search?
+    var organizationsContainer: SearchGitOrgsQlQuery.Data.Search?
+    var limitQueryesStatus = 0
     
     // created apollo client
     let apollo: ApolloClient = {
@@ -35,7 +36,7 @@ class MyDataBase {
         
         if scopeBarVariant == "Repositories" {
             // apollo request
-            apollo.fetch(query: SearchReposQlQuery(withName: searchInput)) { (result, error) in
+            apollo.fetch(query: SearchGitReposQlQuery(withName: searchInput)) { (result, error) in
                 // chesk response
                 guard let receivedRepositoriesStruct = result?.data?.search, error == nil else { completionHandler(false); return }
                 // if response success
@@ -45,7 +46,7 @@ class MyDataBase {
             
         } else if scopeBarVariant == "Users" {
                 // apollo request
-                apollo.fetch(query: SearchUsersQlQuery(withName: searchInput)) { (result, error) in
+            apollo.fetch(query: SearchGitUsersQlQuery(withName: searchInput + " type:user")) { (result, error) in
                     // check response
                     guard let receivedUserStruct = result?.data?.search, error == nil else { completionHandler(false); return }
                     // if response is success
@@ -55,26 +56,22 @@ class MyDataBase {
             
         } else if scopeBarVariant == "Organizations" {
             // apollo request
-            apollo.fetch(query: GetGitOrgQlQuery(withName: searchInput)) { (result, error) in
-                
+            apollo.fetch(query: SearchGitOrgsQlQuery(withName: searchInput + " type:org")) { (result, error) in
+                // check response
+                guard let receivedOrganizationStruct = result?.data?.search, error == nil else { completionHandler(false); return }
+                // if response is success
+                self.organizationsContainer = receivedOrganizationStruct
+                completionHandler(true)
+            }
+        } else if scopeBarVariant == "getLimitStatus" {
+            // apollo request
+            apollo.fetch(query: CallsLimitStatusQlQuery()) { (result, error) in
+                guard let limitStatusStruct = result?.data?.rateLimit else { completionHandler(false); return }
+                // if response is success
+                self.limitQueryesStatus = limitStatusStruct.remaining
+                completionHandler(true)
             }
         }
     } // ------------------------------------------------------------------------------------------
-    
-    
-    func getLimitStatus() {
-        // apollo request
-        apollo.fetch(query: CallsLimitStatusQlQuery()) { (result, error) in
-            guard let limitStatusStruct = result?.data?.rateLimit else { return }
-            
-            print("-------------------------- ")
-            print("cost:", limitStatusStruct.cost)
-            print("limit:", limitStatusStruct.limit)
-            print("nodeCont:", limitStatusStruct.nodeCount)
-            print("remaining:", limitStatusStruct.remaining)
-            print("resetAt:", limitStatusStruct.resetAt)
-            print("-------------------------- ")
-        }
-    }
     
 }

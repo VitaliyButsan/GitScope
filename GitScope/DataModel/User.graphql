@@ -1,79 +1,8 @@
 
 
-# repository QL struct
-query GetRepoQL($name: String!, $owner: String!) {
-    repository(name: $name, owner: $owner) {
-        name
-        createdAt
-    }
-    
-}
-
-# user QL struct
-query GetUserQL($login: String!) {
-    user(login: $login) {
-        login
-        company
-        repositories(first: 3) {
-            nodes {
-                name
-                createdAt
-            },
-            totalDiskUsage
-        },
-        avatarUrl
-    }
-    
-}
-
-# organization QL struct
-query GetGitOrgQL($withName: String!) {
-    organization(login: $withName) {
-        name
-        url
-    }
-}
-
-query CallsLimitStatusQL {
-    rateLimit {
-        cost
-        limit
-        nodeCount
-        remaining
-        resetAt
-    }
-}
-
 # -----------------------------------------------------------------
-query SearchUsersQL($withName: String!) {
-    search(first: 20, query: $withName, type: USER) {
-        nodes {
-            ... UserDetail
-        }
-    }
-}
-
-fragment UserDetail on User {
-    avatarUrl
-    company
-    createdAt
-    login
-    repositories {
-        totalCount
-    }
-    
-} # -----------------------------------------------------------------
-
-
-#starredRepositories {
-#    nodes {
-#
-#    }
-#}
-
-# -----------------------------------------------------------------
-query SearchReposQL($withName: String!) {
-    search(first: 20, query: $withName, type: REPOSITORY) {
+query SearchGitReposQL($withName: String!) {
+    search(first: 50, query: $withName, type: REPOSITORY) {
         #repositoryCount
         nodes {
             ...RepositoryDetail
@@ -83,13 +12,10 @@ query SearchReposQL($withName: String!) {
 
 fragment RepositoryDetail on Repository {
     createdAt
-    isPrivate
     name
     nameWithOwner
+    pushedAt
     assignableUsers(first: 0) {
-        totalCount
-    },
-    collaborators {
         totalCount
     },
     commitComments {
@@ -112,3 +38,74 @@ fragment RepositoryDetail on Repository {
         totalCount
     }
 } # ---------------------------------------------------------------
+
+
+
+# -----------------------------------------------------------------
+query SearchGitUsersQL($withName: String!) {
+    search(first: 20, query: $withName, type: USER) {
+        nodes {
+            ... UserDetail
+        }
+    }
+}
+
+fragment UserDetail on User {
+    avatarUrl
+    company
+    createdAt
+    login
+    repositories(first: 30, affiliations: [OWNER]) {
+        nodes {
+            primaryLanguage {
+                name
+            },
+            stargazers {
+                totalCount
+            }
+        }
+        totalCount
+    }
+} # -----------------------------------------------------------------
+
+
+
+# organization QL struct --------------------------------------------
+query SearchGitOrgsQL($withName: String!) {
+    search(first: 10, query: $withName, type: USER) {
+        nodes {
+            ... OrgDetail
+        }
+    }
+}
+
+fragment OrgDetail on Organization {
+    avatarUrl
+    id
+    isVerified
+    name
+    websiteUrl
+    membersWithRole {
+        totalCount
+    },
+    repositories(first: 20, affiliations: [OWNER]) {
+        nodes {
+            primaryLanguage {
+                name
+            }
+        }
+        totalCount
+    }
+} # -----------------------------------------------------------------
+
+
+# -------------------------
+query CallsLimitStatusQL {
+    rateLimit {
+        cost
+        limit
+        nodeCount
+        remaining
+        resetAt
+    }
+}
