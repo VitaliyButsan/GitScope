@@ -1,12 +1,19 @@
 
 
-# -----------------------------------------------------------------
+# repo QL struct ----------------------------------------------
 query SearchGitReposQL($withName: String!) {
     search(first: 50, query: $withName, type: REPOSITORY) {
-        #repositoryCount
+        repositoryCount
         nodes {
             ...RepositoryDetail
         }
+    }
+    rateLimit {
+        limit
+        cost
+        nodeCount
+        remaining
+        resetAt
     }
 }
 
@@ -17,23 +24,23 @@ fragment RepositoryDetail on Repository {
     pushedAt
     assignableUsers(first: 0) {
         totalCount
-    },
+    }
     commitComments {
         totalCount
-    },
+    }
     mentionableUsers {
         totalCount
-    },
+    }
     owner {
         login
         avatarUrl
-    },
+    }
     primaryLanguage {
         name
-    },
+    }
     stargazers {
         totalCount
-    },
+    }
     watchers {
         totalCount
     }
@@ -41,12 +48,19 @@ fragment RepositoryDetail on Repository {
 
 
 
-# -----------------------------------------------------------------
+# users QL struct -------------------------------------------------
 query SearchGitUsersQL($withName: String!) {
     search(first: 20, query: $withName, type: USER) {
         nodes {
             ... UserDetail
         }
+    }
+    rateLimit {
+        limit
+        cost
+        nodeCount
+        remaining
+        resetAt
     }
 }
 
@@ -59,7 +73,7 @@ fragment UserDetail on User {
         nodes {
             primaryLanguage {
                 name
-            },
+            }
             stargazers {
                 totalCount
             }
@@ -77,6 +91,13 @@ query SearchGitOrgsQL($withName: String!) {
             ... OrgDetail
         }
     }
+    rateLimit {
+        limit
+        cost
+        nodeCount
+        remaining
+        resetAt
+    }
 }
 
 fragment OrgDetail on Organization {
@@ -87,7 +108,7 @@ fragment OrgDetail on Organization {
     websiteUrl
     membersWithRole {
         totalCount
-    },
+    }
     repositories(first: 20, affiliations: [OWNER]) {
         nodes {
             primaryLanguage {
@@ -97,15 +118,3 @@ fragment OrgDetail on Organization {
         totalCount
     }
 } # -----------------------------------------------------------------
-
-
-# -------------------------
-query CallsLimitStatusQL {
-    rateLimit {
-        cost
-        limit
-        nodeCount
-        remaining
-        resetAt
-    }
-}

@@ -4,7 +4,7 @@ import Apollo
 
 public final class SearchGitReposQlQuery: GraphQLQuery {
   public let operationDefinition =
-    "query SearchGitReposQL($withName: String!) {\n  search(first: 50, query: $withName, type: REPOSITORY) {\n    __typename\n    nodes {\n      __typename\n      ...RepositoryDetail\n    }\n  }\n}"
+    "query SearchGitReposQL($withName: String!) {\n  search(first: 50, query: $withName, type: REPOSITORY) {\n    __typename\n    repositoryCount\n    nodes {\n      __typename\n      ...RepositoryDetail\n    }\n  }\n  rateLimit {\n    __typename\n    limit\n    cost\n    nodeCount\n    remaining\n    resetAt\n  }\n}"
 
   public var queryDocument: String { return operationDefinition.appending(RepositoryDetail.fragmentDefinition) }
 
@@ -23,6 +23,7 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
 
     public static let selections: [GraphQLSelection] = [
       GraphQLField("search", arguments: ["first": 50, "query": GraphQLVariable("withName"), "type": "REPOSITORY"], type: .nonNull(.object(Search.selections))),
+      GraphQLField("rateLimit", type: .object(RateLimit.selections)),
     ]
 
     public private(set) var resultMap: ResultMap
@@ -31,8 +32,8 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
       self.resultMap = unsafeResultMap
     }
 
-    public init(search: Search) {
-      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap])
+    public init(search: Search, rateLimit: RateLimit? = nil) {
+      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap, "rateLimit": rateLimit.flatMap { (value: RateLimit) -> ResultMap in value.resultMap }])
     }
 
     /// Perform a search across resources.
@@ -45,11 +46,22 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
       }
     }
 
+    /// The client's rate limit information.
+    public var rateLimit: RateLimit? {
+      get {
+        return (resultMap["rateLimit"] as? ResultMap).flatMap { RateLimit(unsafeResultMap: $0) }
+      }
+      set {
+        resultMap.updateValue(newValue?.resultMap, forKey: "rateLimit")
+      }
+    }
+
     public struct Search: GraphQLSelectionSet {
       public static let possibleTypes = ["SearchResultItemConnection"]
 
       public static let selections: [GraphQLSelection] = [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("repositoryCount", type: .nonNull(.scalar(Int.self))),
         GraphQLField("nodes", type: .list(.object(Node.selections))),
       ]
 
@@ -59,8 +71,8 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
         self.resultMap = unsafeResultMap
       }
 
-      public init(nodes: [Node?]? = nil) {
-        self.init(unsafeResultMap: ["__typename": "SearchResultItemConnection", "nodes": nodes.flatMap { (value: [Node?]) -> [ResultMap?] in value.map { (value: Node?) -> ResultMap? in value.flatMap { (value: Node) -> ResultMap in value.resultMap } } }])
+      public init(repositoryCount: Int, nodes: [Node?]? = nil) {
+        self.init(unsafeResultMap: ["__typename": "SearchResultItemConnection", "repositoryCount": repositoryCount, "nodes": nodes.flatMap { (value: [Node?]) -> [ResultMap?] in value.map { (value: Node?) -> ResultMap? in value.flatMap { (value: Node) -> ResultMap in value.resultMap } } }])
       }
 
       public var __typename: String {
@@ -69,6 +81,16 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
         }
         set {
           resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      /// The number of repositories that matched the search query.
+      public var repositoryCount: Int {
+        get {
+          return resultMap["repositoryCount"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "repositoryCount")
         }
       }
 
@@ -154,12 +176,94 @@ public final class SearchGitReposQlQuery: GraphQLQuery {
         }
       }
     }
+
+    public struct RateLimit: GraphQLSelectionSet {
+      public static let possibleTypes = ["RateLimit"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("limit", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("cost", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("nodeCount", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("remaining", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("resetAt", type: .nonNull(.scalar(String.self))),
+      ]
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public init(limit: Int, cost: Int, nodeCount: Int, remaining: Int, resetAt: String) {
+        self.init(unsafeResultMap: ["__typename": "RateLimit", "limit": limit, "cost": cost, "nodeCount": nodeCount, "remaining": remaining, "resetAt": resetAt])
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      /// The maximum number of points the client is permitted to consume in a 60 minute window.
+      public var limit: Int {
+        get {
+          return resultMap["limit"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "limit")
+        }
+      }
+
+      /// The point cost for the current query counting against the rate limit.
+      public var cost: Int {
+        get {
+          return resultMap["cost"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "cost")
+        }
+      }
+
+      /// The maximum number of nodes this query may return
+      public var nodeCount: Int {
+        get {
+          return resultMap["nodeCount"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "nodeCount")
+        }
+      }
+
+      /// The number of points remaining in the current rate limit window.
+      public var remaining: Int {
+        get {
+          return resultMap["remaining"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "remaining")
+        }
+      }
+
+      /// The time at which the current rate limit window resets in UTC epoch seconds.
+      public var resetAt: String {
+        get {
+          return resultMap["resetAt"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "resetAt")
+        }
+      }
+    }
   }
 }
 
 public final class SearchGitUsersQlQuery: GraphQLQuery {
   public let operationDefinition =
-    "query SearchGitUsersQL($withName: String!) {\n  search(first: 20, query: $withName, type: USER) {\n    __typename\n    nodes {\n      __typename\n      ...UserDetail\n    }\n  }\n}"
+    "query SearchGitUsersQL($withName: String!) {\n  search(first: 20, query: $withName, type: USER) {\n    __typename\n    nodes {\n      __typename\n      ...UserDetail\n    }\n  }\n  rateLimit {\n    __typename\n    limit\n    cost\n    nodeCount\n    remaining\n    resetAt\n  }\n}"
 
   public var queryDocument: String { return operationDefinition.appending(UserDetail.fragmentDefinition) }
 
@@ -178,6 +282,7 @@ public final class SearchGitUsersQlQuery: GraphQLQuery {
 
     public static let selections: [GraphQLSelection] = [
       GraphQLField("search", arguments: ["first": 20, "query": GraphQLVariable("withName"), "type": "USER"], type: .nonNull(.object(Search.selections))),
+      GraphQLField("rateLimit", type: .object(RateLimit.selections)),
     ]
 
     public private(set) var resultMap: ResultMap
@@ -186,8 +291,8 @@ public final class SearchGitUsersQlQuery: GraphQLQuery {
       self.resultMap = unsafeResultMap
     }
 
-    public init(search: Search) {
-      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap])
+    public init(search: Search, rateLimit: RateLimit? = nil) {
+      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap, "rateLimit": rateLimit.flatMap { (value: RateLimit) -> ResultMap in value.resultMap }])
     }
 
     /// Perform a search across resources.
@@ -197,6 +302,16 @@ public final class SearchGitUsersQlQuery: GraphQLQuery {
       }
       set {
         resultMap.updateValue(newValue.resultMap, forKey: "search")
+      }
+    }
+
+    /// The client's rate limit information.
+    public var rateLimit: RateLimit? {
+      get {
+        return (resultMap["rateLimit"] as? ResultMap).flatMap { RateLimit(unsafeResultMap: $0) }
+      }
+      set {
+        resultMap.updateValue(newValue?.resultMap, forKey: "rateLimit")
       }
     }
 
@@ -309,12 +424,94 @@ public final class SearchGitUsersQlQuery: GraphQLQuery {
         }
       }
     }
+
+    public struct RateLimit: GraphQLSelectionSet {
+      public static let possibleTypes = ["RateLimit"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("limit", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("cost", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("nodeCount", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("remaining", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("resetAt", type: .nonNull(.scalar(String.self))),
+      ]
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public init(limit: Int, cost: Int, nodeCount: Int, remaining: Int, resetAt: String) {
+        self.init(unsafeResultMap: ["__typename": "RateLimit", "limit": limit, "cost": cost, "nodeCount": nodeCount, "remaining": remaining, "resetAt": resetAt])
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      /// The maximum number of points the client is permitted to consume in a 60 minute window.
+      public var limit: Int {
+        get {
+          return resultMap["limit"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "limit")
+        }
+      }
+
+      /// The point cost for the current query counting against the rate limit.
+      public var cost: Int {
+        get {
+          return resultMap["cost"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "cost")
+        }
+      }
+
+      /// The maximum number of nodes this query may return
+      public var nodeCount: Int {
+        get {
+          return resultMap["nodeCount"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "nodeCount")
+        }
+      }
+
+      /// The number of points remaining in the current rate limit window.
+      public var remaining: Int {
+        get {
+          return resultMap["remaining"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "remaining")
+        }
+      }
+
+      /// The time at which the current rate limit window resets in UTC epoch seconds.
+      public var resetAt: String {
+        get {
+          return resultMap["resetAt"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "resetAt")
+        }
+      }
+    }
   }
 }
 
 public final class SearchGitOrgsQlQuery: GraphQLQuery {
   public let operationDefinition =
-    "query SearchGitOrgsQL($withName: String!) {\n  search(first: 10, query: $withName, type: USER) {\n    __typename\n    nodes {\n      __typename\n      ...OrgDetail\n    }\n  }\n}"
+    "query SearchGitOrgsQL($withName: String!) {\n  search(first: 10, query: $withName, type: USER) {\n    __typename\n    nodes {\n      __typename\n      ...OrgDetail\n    }\n  }\n  rateLimit {\n    __typename\n    limit\n    cost\n    nodeCount\n    remaining\n    resetAt\n  }\n}"
 
   public var queryDocument: String { return operationDefinition.appending(OrgDetail.fragmentDefinition) }
 
@@ -333,6 +530,7 @@ public final class SearchGitOrgsQlQuery: GraphQLQuery {
 
     public static let selections: [GraphQLSelection] = [
       GraphQLField("search", arguments: ["first": 10, "query": GraphQLVariable("withName"), "type": "USER"], type: .nonNull(.object(Search.selections))),
+      GraphQLField("rateLimit", type: .object(RateLimit.selections)),
     ]
 
     public private(set) var resultMap: ResultMap
@@ -341,8 +539,8 @@ public final class SearchGitOrgsQlQuery: GraphQLQuery {
       self.resultMap = unsafeResultMap
     }
 
-    public init(search: Search) {
-      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap])
+    public init(search: Search, rateLimit: RateLimit? = nil) {
+      self.init(unsafeResultMap: ["__typename": "Query", "search": search.resultMap, "rateLimit": rateLimit.flatMap { (value: RateLimit) -> ResultMap in value.resultMap }])
     }
 
     /// Perform a search across resources.
@@ -352,6 +550,16 @@ public final class SearchGitOrgsQlQuery: GraphQLQuery {
       }
       set {
         resultMap.updateValue(newValue.resultMap, forKey: "search")
+      }
+    }
+
+    /// The client's rate limit information.
+    public var rateLimit: RateLimit? {
+      get {
+        return (resultMap["rateLimit"] as? ResultMap).flatMap { RateLimit(unsafeResultMap: $0) }
+      }
+      set {
+        resultMap.updateValue(newValue?.resultMap, forKey: "rateLimit")
       }
     }
 
@@ -464,50 +672,14 @@ public final class SearchGitOrgsQlQuery: GraphQLQuery {
         }
       }
     }
-  }
-}
-
-public final class CallsLimitStatusQlQuery: GraphQLQuery {
-  public let operationDefinition =
-    "query CallsLimitStatusQL {\n  rateLimit {\n    __typename\n    cost\n    limit\n    nodeCount\n    remaining\n    resetAt\n  }\n}"
-
-  public init() {
-  }
-
-  public struct Data: GraphQLSelectionSet {
-    public static let possibleTypes = ["Query"]
-
-    public static let selections: [GraphQLSelection] = [
-      GraphQLField("rateLimit", type: .object(RateLimit.selections)),
-    ]
-
-    public private(set) var resultMap: ResultMap
-
-    public init(unsafeResultMap: ResultMap) {
-      self.resultMap = unsafeResultMap
-    }
-
-    public init(rateLimit: RateLimit? = nil) {
-      self.init(unsafeResultMap: ["__typename": "Query", "rateLimit": rateLimit.flatMap { (value: RateLimit) -> ResultMap in value.resultMap }])
-    }
-
-    /// The client's rate limit information.
-    public var rateLimit: RateLimit? {
-      get {
-        return (resultMap["rateLimit"] as? ResultMap).flatMap { RateLimit(unsafeResultMap: $0) }
-      }
-      set {
-        resultMap.updateValue(newValue?.resultMap, forKey: "rateLimit")
-      }
-    }
 
     public struct RateLimit: GraphQLSelectionSet {
       public static let possibleTypes = ["RateLimit"]
 
       public static let selections: [GraphQLSelection] = [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-        GraphQLField("cost", type: .nonNull(.scalar(Int.self))),
         GraphQLField("limit", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("cost", type: .nonNull(.scalar(Int.self))),
         GraphQLField("nodeCount", type: .nonNull(.scalar(Int.self))),
         GraphQLField("remaining", type: .nonNull(.scalar(Int.self))),
         GraphQLField("resetAt", type: .nonNull(.scalar(String.self))),
@@ -519,8 +691,8 @@ public final class CallsLimitStatusQlQuery: GraphQLQuery {
         self.resultMap = unsafeResultMap
       }
 
-      public init(cost: Int, limit: Int, nodeCount: Int, remaining: Int, resetAt: String) {
-        self.init(unsafeResultMap: ["__typename": "RateLimit", "cost": cost, "limit": limit, "nodeCount": nodeCount, "remaining": remaining, "resetAt": resetAt])
+      public init(limit: Int, cost: Int, nodeCount: Int, remaining: Int, resetAt: String) {
+        self.init(unsafeResultMap: ["__typename": "RateLimit", "limit": limit, "cost": cost, "nodeCount": nodeCount, "remaining": remaining, "resetAt": resetAt])
       }
 
       public var __typename: String {
@@ -532,16 +704,6 @@ public final class CallsLimitStatusQlQuery: GraphQLQuery {
         }
       }
 
-      /// The point cost for the current query counting against the rate limit.
-      public var cost: Int {
-        get {
-          return resultMap["cost"]! as! Int
-        }
-        set {
-          resultMap.updateValue(newValue, forKey: "cost")
-        }
-      }
-
       /// The maximum number of points the client is permitted to consume in a 60 minute window.
       public var limit: Int {
         get {
@@ -549,6 +711,16 @@ public final class CallsLimitStatusQlQuery: GraphQLQuery {
         }
         set {
           resultMap.updateValue(newValue, forKey: "limit")
+        }
+      }
+
+      /// The point cost for the current query counting against the rate limit.
+      public var cost: Int {
+        get {
+          return resultMap["cost"]! as! Int
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "cost")
         }
       }
 

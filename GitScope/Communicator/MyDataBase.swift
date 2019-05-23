@@ -15,10 +15,11 @@ class MyDataBase {
     // singleton
     static let shared = MyDataBase()
     
-    var userContainer: SearchGitUsersQlQuery.Data.Search?
-    var repositoriesContainer: SearchGitReposQlQuery.Data.Search?
-    var organizationsContainer: SearchGitOrgsQlQuery.Data.Search?
-    var limitQueryesStatus = 0
+    // containers for received data
+    var userContainer: SearchGitUsersQlQuery.Data?
+    var repositoriesContainer: SearchGitReposQlQuery.Data?
+    var organizationsContainer: SearchGitOrgsQlQuery.Data?
+    var limitQueriesStatus: Int?
     
     // created apollo client
     let apollo: ApolloClient = {
@@ -26,7 +27,7 @@ class MyDataBase {
         // add additionals headers if needed
         configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(vitGitHubBearerToken)"]
         let url = URL(string: vitGitHubGraphQLEndPoint)!
-        // return client
+        // return apollo client
         return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
     }()
     
@@ -36,42 +37,41 @@ class MyDataBase {
         
         if scopeBarVariant == "Repositories" {
             // apollo request
-            apollo.fetch(query: SearchGitReposQlQuery(withName: searchInput)) { (result, error) in
+            let rep = SearchGitReposQlQuery(withName: searchInput)
+            apollo.fetch(query: rep) { (result, error) in
                 // chesk response
-                guard let receivedRepositoriesStruct = result?.data?.search, error == nil else { completionHandler(false); return }
-                // if response success
+                guard let receivedRepositoriesStruct = result?.data, error == nil else { completionHandler(false); return }
+                // if response is success
                 self.repositoriesContainer = receivedRepositoriesStruct
+                self.limitQueriesStatus = receivedRepositoriesStruct.rateLimit?.remaining
                 completionHandler(true)
             }
             
         } else if scopeBarVariant == "Users" {
-                // apollo request
-            apollo.fetch(query: SearchGitUsersQlQuery(withName: searchInput + " type:user")) { (result, error) in
-                    // check response
-                    guard let receivedUserStruct = result?.data?.search, error == nil else { completionHandler(false); return }
-                    // if response is success
-                    self.userContainer = receivedUserStruct
-                    completionHandler(true)
-                }
+            // apollo request
+            let usr = SearchGitUsersQlQuery(withName: searchInput + " type:user")
+            apollo.fetch(query: usr) { (result, error) in
+                // check response
+                guard let receivedUserStruct = result?.data, error == nil else { completionHandler(false); return }
+                // if response is success
+                self.userContainer = receivedUserStruct
+                self.limitQueriesStatus = receivedUserStruct.rateLimit?.remaining
+                completionHandler(true)
+            }
             
         } else if scopeBarVariant == "Organizations" {
             // apollo request
-            apollo.fetch(query: SearchGitOrgsQlQuery(withName: searchInput + " type:org")) { (result, error) in
+            let org = SearchGitOrgsQlQuery(withName: searchInput + " type:org")
+            apollo.fetch(query: org) { (result, error) in
                 // check response
-                guard let receivedOrganizationStruct = result?.data?.search, error == nil else { completionHandler(false); return }
+                guard let receivedOrganizationStruct = result?.data, error == nil else { completionHandler(false); return }
                 // if response is success
                 self.organizationsContainer = receivedOrganizationStruct
-                completionHandler(true)
-            }
-        } else if scopeBarVariant == "getLimitStatus" {
-            // apollo request
-            apollo.fetch(query: CallsLimitStatusQlQuery()) { (result, error) in
-                guard let limitStatusStruct = result?.data?.rateLimit else { completionHandler(false); return }
-                // if response is success
-                self.limitQueryesStatus = limitStatusStruct.remaining
+                self.limitQueriesStatus = receivedOrganizationStruct.rateLimit?.remaining
                 completionHandler(true)
             }
         }
     } // ------------------------------------------------------------------------------------------
-    
+
 }
+

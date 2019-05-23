@@ -21,6 +21,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     private var searchBarIsLaunching = false
     private var defaultCellsAmount = 10
     private var limitCounter = 0
+    var db = MyDataBase.shared
 
     // establish custom titleLabel
     private var customTitleView: UILabel = {
@@ -58,17 +59,8 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         setupSearchController()
         // navigationBarItems setup
         setupNavigationBarItems()
-        
-        // get limit requests status
-        MyDataBase.shared.getData(withSearchInput: "", forScopeBarVariant: "getLimitStatus") { isReceived in
-            if isReceived {
-                self.limitCounter = MyDataBase.shared.limitQueryesStatus
-            } else {
-                self.repeaterTitle(withText: "<  Limit not received!  >", withTextColor: #colorLiteral(red: 0.7184983492, green: 0.07270544022, blue: 0.1745591164, alpha: 1))
-            }
-        }
     }
-
+    
     // define setNavBarGradient func
     private func setNavBarGradient() {
         
@@ -78,7 +70,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             
             bounds.size.height += UIApplication.shared.statusBarFrame.size.height
             gradient.frame = bounds
-            // set gradient from --> to
+            // set gradient [from, to]
             gradient.colors = [UIColor.init(cgColor: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)).cgColor, UIColor.init(cgColor: #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)).cgColor]
             gradient.locations = [0, 1]
             
@@ -102,10 +94,14 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     }
 
     // limit button handler
-    @objc private func limitButtonHandler() {
-        repeaterTitle(withText: "<  Your limit: \(limitCounter) requests  >", withTextColor: #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1))
+    @objc func limitButtonHandler() {
+        if MyDataBase.shared.limitQueriesStatus != nil {
+            repeaterTitle(withText: "<  Your limit: \(limitCounter) requests  >", withTextColor: #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1))
+        } else {
+            self.repeaterTitle(withText: "<  Limit not received!  >", withTextColor: #colorLiteral(red: 0.7184983492, green: 0.07270544022, blue: 0.1745591164, alpha: 1))
+        }
     }
-    
+        
     // repeater titleLabel animation func
     @objc private func repeaterTitle(withText titleText: String, withTextColor textColor: UIColor) {
         animatorTitleLabel(withText: titleText, textColor: textColor, withDelay: 0.0)
@@ -137,21 +133,30 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
 
     // get data
     @objc func getData() {
+        // loading wheel started, into searchBar
         searchController.searchBar.isLoading = true
         
-        // get Users
         MyDataBase.shared.getData(withSearchInput: inputSearchText, forScopeBarVariant: scopeBarDefaultTitle) { isCompleted in
             if isCompleted {
-                //print(MyDataBase.shared.userContainer)
+                
+                // if data not received earlier and title has been red
+                if self.customTitleView.text == "<  No" + " \(self.scopeBarDefaultTitle) " + "Data!  >" {
+                    self.animatorTitleLabel(withText: "<  " + "\(self.scopeBarDefaultTitle)" + "🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)
+                }
+                
+                // after data has been reseived, set limitCounter and defaultCellsAmount
+                self.limitCounter = MyDataBase.shared.limitQueriesStatus ?? 0
+                self.defaultCellsAmount = MyDataBase.shared.repositoriesContainer?.search.nodes?.count ?? self.defaultCellsAmount
+                self.defaultCellsAmount = MyDataBase.shared.userContainer?.search.nodes?.count ?? self.defaultCellsAmount
+                self.defaultCellsAmount = MyDataBase.shared.organizationsContainer?.search.nodes?.count ?? self.defaultCellsAmount
+                
                 DispatchQueue.main.async {
-                    self.defaultCellsAmount = MyDataBase.shared.repositoriesContainer?.nodes?.count ?? self.defaultCellsAmount
-                    self.defaultCellsAmount = MyDataBase.shared.userContainer?.nodes?.count ?? self.defaultCellsAmount
-                    self.defaultCellsAmount = MyDataBase.shared.organizationsContainer?.nodes?.count ?? self.defaultCellsAmount
+                    // stop loading wheel and then reload tabelView
                     self.searchController.searchBar.isLoading = false
                     self.tableView.reloadData()
                 }
             } else {
-                print("ERROR: NO DATA!")
+                // if data not received
                 self.searchController.searchBar.isLoading = false
                 self.animatorTitleLabel(withText: "<  No" + " \(self.scopeBarDefaultTitle) " + "Data!  >", textColor: #colorLiteral(red: 0.8219781091, green: 0.03732189472, blue: 0.1942074423, alpha: 1), withDelay: 0.5)
             }
@@ -179,13 +184,13 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     
     // set number of rows in table
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
+        // number of rows basis on received data
         if let repositories = MyDataBase.shared.repositoriesContainer {
-            return repositories.nodes?.count ?? defaultCellsAmount
+            return repositories.search.nodes?.count ?? defaultCellsAmount
         } else if let users = MyDataBase.shared.userContainer {
-            return users.nodes?.count ?? defaultCellsAmount
+            return users.search.nodes?.count ?? defaultCellsAmount
         } else if let organizations = MyDataBase.shared.organizationsContainer {
-            return organizations.nodes?.count ?? defaultCellsAmount
+            return organizations.search.nodes?.count ?? defaultCellsAmount
         } else {
             return defaultCellsAmount
         }
@@ -194,7 +199,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     // reuse the cell --------------------------------------------------------------------------------------------------
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! GitCardsTableViewCell
-        
+
         // set titles based on searchScopeBar variant
         cell.setLabelsTitle(withSearchScopeBarVariant: scopeBarDefaultTitle)
         
@@ -223,6 +228,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             }
             
             defaultCellsAmount -= 1
+            // for don't repeat animated cells
             if indexPath.row > greatherIndex {
                 greatherIndex = indexPath.row
             }
@@ -254,7 +260,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         MyDataBase.shared.repositoriesContainer = nil
         MyDataBase.shared.userContainer = nil
         MyDataBase.shared.organizationsContainer = nil
-        
+
         scopeBarDefaultTitle = searchBar.scopeButtonTitles![selectedScope]
         // animate titleLabel with scopeBar title
         self.animatorTitleLabel(withText: "<  " + self.scopeBarDefaultTitle + " 🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)

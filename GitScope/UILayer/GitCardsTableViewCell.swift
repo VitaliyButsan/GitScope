@@ -394,8 +394,8 @@ class GitCardsTableViewCell: UITableViewCell {
     func updateCell<T>(withData data: T, withScopeBarVariant scopeBarVariant: String, forIndexPath indexPath: IndexPath) {
         // ------------------------------------------------------------------------
         if scopeBarVariant == "Repositories" {
-            guard let repoDetailOfSearchingResult = data as? SearchGitReposQlQuery.Data.Search else { return }
-            let repo = repoDetailOfSearchingResult.nodes?[indexPath.row]?.fragments.repositoryDetail
+            guard let repoDetailOfSearchingResult = data as? SearchGitReposQlQuery.Data else { return }
+            let repo = repoDetailOfSearchingResult.search.nodes?[indexPath.row]?.fragments.repositoryDetail
             let imageLink = URL(string: repo?.owner.avatarUrl ?? "")!
             // set values
             iconView.sd_setImage(with: imageLink, completed: nil)
@@ -407,8 +407,8 @@ class GitCardsTableViewCell: UITableViewCell {
             counterProfLanguagesLabel.text = (repo?.primaryLanguage?.name != nil && repo?.primaryLanguage?.name != "") ? repo?.primaryLanguage?.name : "- - -"
         // ------------------------------------------------------------------------
         } else if scopeBarVariant == "Users" {
-            guard let usersProfile = data as? SearchGitUsersQlQuery.Data.Search else { return }
-            var userDetails = usersProfile.nodes?[indexPath.row]?.fragments.userDetail
+            guard let usersProfile = data as? SearchGitUsersQlQuery.Data else { return }
+            var userDetails = usersProfile.search.nodes?[indexPath.row]?.fragments.userDetail
             let imageLink = URL(string: userDetails?.avatarUrl ?? "")
             // set values
             iconView.sd_setImage(with: imageLink, completed: nil)
@@ -420,8 +420,8 @@ class GitCardsTableViewCell: UITableViewCell {
             counterProfLanguagesLabel.text = "\(languagesCounter(fromProfile: userDetails))"
         // ------------------------------------------------------------------------
         } else if scopeBarVariant == "Organizations" {
-            guard let orgProfile = data as? SearchGitOrgsQlQuery.Data.Search else { return }
-            var orgDetails = orgProfile.nodes?[indexPath.row]?.fragments.orgDetail
+            guard let orgProfile = data as? SearchGitOrgsQlQuery.Data else { return }
+            var orgDetails = orgProfile.search.nodes?[indexPath.row]?.fragments.orgDetail
             let imageLink = URL(string: orgDetails?.avatarUrl ?? "")
             
             iconView.sd_setImage(with: imageLink, completed: nil)
@@ -432,7 +432,6 @@ class GitCardsTableViewCell: UITableViewCell {
             starsCounterLabel.text = "\(orgDetails?.membersWithRole.totalCount ?? 0)"
             counterProfLanguagesLabel.text = "\(languagesCounter(fromProfile: orgDetails))"
         }
-
     } // =====================================================================================
     
     
