@@ -27,7 +27,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     private var customTitleView: UILabel = {
         let myTitle = UILabel.init(frame: CGRect(x: 0, y: 0, width: 240, height: 30))
         myTitle.textAlignment = .center
-        myTitle.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+        myTitle.backgroundColor = #colorLiteral(red: 0.9845624922, green: 1, blue: 0.9875162251, alpha: 0)
         myTitle.text = "<  🔍  >"
         return myTitle
     }()
@@ -96,7 +96,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     // limit button handler
     @objc func limitButtonHandler() {
         if MyDataBase.shared.limitQueriesStatus != nil {
-            repeaterTitle(withText: "<  Your limit: \(limitCounter) requests  >", withTextColor: #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1))
+            repeaterTitle(withText: "<  Remain: \(limitCounter) requests  >", withTextColor: #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1))
         } else {
             self.repeaterTitle(withText: "<  Limit not received!  >", withTextColor: #colorLiteral(red: 0.7184983492, green: 0.07270544022, blue: 0.1745591164, alpha: 1))
         }
