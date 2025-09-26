@@ -1,5 +1,3 @@
-
-
 # repo QL struct ----------------------------------------------
 query SearchGitReposQL($withName: String!) {
     search(first: 50, query: $withName, type: REPOSITORY) {
@@ -22,15 +20,6 @@ fragment RepositoryDetail on Repository {
     name
     nameWithOwner
     pushedAt
-    assignableUsers(first: 0) {
-        totalCount
-    }
-    commitComments {
-        totalCount
-    }
-    mentionableUsers {
-        totalCount
-    }
     owner {
         login
         avatarUrl
@@ -45,7 +34,6 @@ fragment RepositoryDetail on Repository {
         totalCount
     }
 } # ---------------------------------------------------------------
-
 
 
 # users QL struct -------------------------------------------------

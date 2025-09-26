@@ -16,12 +16,13 @@
 		58632F6E227CF19300FB8CE9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 58632F6C227CF19300FB8CE9 /* LaunchScreen.storyboard */; };
 		58632F7E227DC7A700FB8CE9 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58632F7D227DC7A700FB8CE9 /* Constants.swift */; };
 		58632F80227DC87E00FB8CE9 /* MyDataBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58632F7F227DC87E00FB8CE9 /* MyDataBase.swift */; };
-		586EFA5F228CE4FA003EB678 /* User.graphql in Resources */ = {isa = PBXBuildFile; fileRef = 586EFA5E228CE4FA003EB678 /* User.graphql */; };
+		586EFA5F228CE4FA003EB678 /* usersQuery.graphql in Resources */ = {isa = PBXBuildFile; fileRef = 586EFA5E228CE4FA003EB678 /* usersQuery.graphql */; };
 		58BFAE832284CE3C003EF31F /* GitCardsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58BFAE822284CE3C003EF31F /* GitCardsTableViewCell.swift */; };
 		DD9C8CB02E867DD6004C5CCF /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DD9C8CAF2E867DD6004C5CCF /* Alamofire */; };
 		DD9C8CB32E867DEE004C5CCF /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = DD9C8CB22E867DEE004C5CCF /* SDWebImage */; };
 		DD9C8CB62E867E06004C5CCF /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DD9C8CB52E867E06004C5CCF /* Apollo */; };
 		DD9C8CB82E868703004C5CCF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C8CB72E868702004C5CCF /* SceneDelegate.swift */; };
+		DD9C8CBA2E869A3F004C5CCF /* schema.graphqls in Resources */ = {isa = PBXBuildFile; fileRef = DD9C8CB92E869A3F004C5CCF /* schema.graphqls */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,9 +37,10 @@
 		58632F6F227CF19300FB8CE9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		58632F7D227DC7A700FB8CE9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		58632F7F227DC87E00FB8CE9 /* MyDataBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyDataBase.swift; sourceTree = "<group>"; };
-		586EFA5E228CE4FA003EB678 /* User.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = User.graphql; sourceTree = "<group>"; };
+		586EFA5E228CE4FA003EB678 /* usersQuery.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = usersQuery.graphql; sourceTree = "<group>"; };
 		58BFAE822284CE3C003EF31F /* GitCardsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitCardsTableViewCell.swift; sourceTree = "<group>"; };
 		DD9C8CB72E868702004C5CCF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		DD9C8CB92E869A3F004C5CCF /* schema.graphqls */ = {isa = PBXFileReference; lastKnownFileType = text; path = schema.graphqls; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,7 +108,8 @@
 		58BFAE7F2284C9B1003EF31F /* DataModel */ = {
 			isa = PBXGroup;
 			children = (
-				586EFA5E228CE4FA003EB678 /* User.graphql */,
+				586EFA5E228CE4FA003EB678 /* usersQuery.graphql */,
+				DD9C8CB92E869A3F004C5CCF /* schema.graphqls */,
 				58632F7D227DC7A700FB8CE9 /* Constants.swift */,
 			);
 			path = DataModel;
@@ -194,8 +197,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				586EFA5F228CE4FA003EB678 /* User.graphql in Resources */,
+				586EFA5F228CE4FA003EB678 /* usersQuery.graphql in Resources */,
 				58632F6E227CF19300FB8CE9 /* LaunchScreen.storyboard in Resources */,
+				DD9C8CBA2E869A3F004C5CCF /* schema.graphqls in Resources */,
 				58632F6B227CF19300FB8CE9 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
