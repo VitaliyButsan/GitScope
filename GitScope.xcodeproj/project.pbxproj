@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,6 +23,7 @@
 		DD9C8CB62E867E06004C5CCF /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DD9C8CB52E867E06004C5CCF /* Apollo */; };
 		DD9C8CB82E868703004C5CCF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C8CB72E868702004C5CCF /* SceneDelegate.swift */; };
 		DD9C8CBA2E869A3F004C5CCF /* schema.graphqls in Resources */ = {isa = PBXBuildFile; fileRef = DD9C8CB92E869A3F004C5CCF /* schema.graphqls */; };
+		DD9C8CBD2E869FD2004C5CCF /* GitHubAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DD9C8CBC2E869FD2004C5CCF /* GitHubAPI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 			files = (
 				DD9C8CB32E867DEE004C5CCF /* SDWebImage in Frameworks */,
 				DD9C8CB62E867E06004C5CCF /* Apollo in Frameworks */,
+				DD9C8CBD2E869FD2004C5CCF /* GitHubAPI in Frameworks */,
 				DD9C8CB02E867DD6004C5CCF /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -182,6 +184,7 @@
 				DD9C8CAE2E867DD6004C5CCF /* XCRemoteSwiftPackageReference "Alamofire" */,
 				DD9C8CB12E867DEE004C5CCF /* XCRemoteSwiftPackageReference "SDWebImage" */,
 				DD9C8CB42E867E06004C5CCF /* XCRemoteSwiftPackageReference "apollo-ios" */,
+				DD9C8CBB2E869FD2004C5CCF /* XCLocalSwiftPackageReference "GitHubAPI" */,
 			);
 			productRefGroup = 58632F61227CF18F00FB8CE9 /* Products */;
 			projectDirPath = "";
@@ -414,6 +417,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		DD9C8CBB2E869FD2004C5CCF /* XCLocalSwiftPackageReference "GitHubAPI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = GitHubAPI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		DD9C8CAE2E867DD6004C5CCF /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -456,6 +466,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DD9C8CB42E867E06004C5CCF /* XCRemoteSwiftPackageReference "apollo-ios" */;
 			productName = Apollo;
+		};
+		DD9C8CBC2E869FD2004C5CCF /* GitHubAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GitHubAPI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

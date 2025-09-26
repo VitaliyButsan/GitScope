@@ -1,28 +1,20 @@
 {
-  "schemaNamespace" : "GitHubAPI",
-  "input" : {
-    "operationSearchPaths" : [
-      "**/*.graphql"
+  "schemaNamespace": "GitHubAPI",
+  "input": {
+    "operationSearchPaths": [
+      "GitScope/DataModel/*.graphql",
+      "GitScope/DataModel/**/*.graphql"
     ],
-    "schemaSearchPaths" : [
-      "**/*.graphqls"
+    "schemaSearchPaths": [
+      "GitScope/DataModel/schema.graphqls"
     ]
   },
-  "output" : {
-    "testMocks" : {
-      "none" : {
-      }
+  "output": {
+    "testMocks": { "none": {} },
+    "schemaTypes": {
+      "path": "./GitHubAPI",
+      "moduleType": { "swiftPackage": {} }
     },
-    "schemaTypes" : {
-      "path" : "./GitHubAPI",
-      "moduleType" : {
-        "swiftPackageManager" : {
-        }
-      }
-    },
-    "operations" : {
-      "inSchemaModule" : {
-      }
-    }
+    "operations": { "inSchemaModule": {} }
   }
 }
