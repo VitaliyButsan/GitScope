@@ -15,5 +15,4 @@ class AllGitHub {
     static let shared = AllGitHub()
     //var allResultsArray: [
     
-    
 }
