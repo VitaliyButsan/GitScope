@@ -68,8 +68,8 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         if let navigationBar = self.navigationController?.navigationBar {
             let gradient = CAGradientLayer()
             var bounds = navigationBar.bounds
-            
-            bounds.size.height += UIApplication.shared.statusBarFrame.size.height
+            let statusBarHeight: CGFloat = self.view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
+            bounds.size.height += statusBarHeight
             gradient.frame = bounds
             // set gradient [from, to]
             gradient.colors = [UIColor.init(cgColor: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)).cgColor, UIColor.init(cgColor: #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)).cgColor]
@@ -119,14 +119,13 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         searchController.searchBar.backgroundColor = #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)
         searchController.searchBar.placeholder = "Find on GitHub"
         searchController.searchBar.scopeButtonTitles = ["Repositories", "Users", "Organizations"]
-        searchController.searchBar.textField?.addTarget(self, action: #selector(getData), for: UIControl.Event.primaryActionTriggered)
         searchController.searchBar.textField?.clearButtonMode = .never
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchResultsUpdater = self
         searchController.searchBar.delegate = self
         searchController.searchBar.textField?.textColor = .red
         searchController.obscuresBackgroundDuringPresentation = false // ?
-        searchController.dimsBackgroundDuringPresentation = false
+        searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.searchController = searchController
         definesPresentationContext = true
@@ -165,7 +164,11 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         // turn ON animations flag
         animationsIsLaunching = false
     }
-
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        inputSearchText = searchBar.text?.trimmingCharacters(in: .whitespaces).lowercased() ?? ""
+        getData()
+    }
     
     // cancel button responder
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
@@ -193,7 +196,6 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         } else if let organizations = MyDataBase.shared.organizationsContainer {
             return organizations.search.nodes?.count ?? 3
         } else {
-//            print("----------------------->")
             return defaultCellsAmount
         }
     }
@@ -306,7 +308,7 @@ extension UISearchBar {
             if newValue {
                 // Set up activity indicator
                 if activityIndicator == nil {
-                    let newActivityIndicator = UIActivityIndicatorView(style: .gray)
+                    let newActivityIndicator = UIActivityIndicatorView()
                     newActivityIndicator.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
                     newActivityIndicator.startAnimating()
                     newActivityIndicator.backgroundColor = #colorLiteral(red: 0.7783739567, green: 0.9003444314, blue: 0.8740741014, alpha: 1)
