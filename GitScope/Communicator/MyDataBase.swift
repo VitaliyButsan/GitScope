@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import GitHubAPI
 import Alamofire
 import Apollo
 
@@ -16,62 +17,110 @@ class MyDataBase {
     static let shared = MyDataBase()
     
     // containers for received data
-//    var userContainer: SearchGitUsersQlQuery.Data?
-//    var repositoriesContainer: SearchGitReposQlQuery.Data?
-//    var organizationsContainer: SearchGitOrgsQlQuery.Data?
-//    var limitQueriesStatus: Int?
+    var userContainer: SearchGitUsersQLQuery.Data?
+    var repositoriesContainer: SearchGitReposQLQuery.Data?
+    var organizationsContainer: SearchGitOrgsQLQuery.Data?
+    var limitQueriesStatus: Int?
+    private(set) var apollo: ApolloClient
     
-    // created apollo client
-//    let apollo: ApolloClient = {
-//        let configuration = URLSessionConfiguration.default
-//        // add additionals headers if needed
-//        configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(vitGitHubBearerToken)"]
-//        let url = URL(string: vitGitHubGraphQLEndPoint)!
-//        // return apollo client
-//        return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
-//    }()
+    // MARK: - Initializer
     
+    private init() {
+        let store = ApolloStore()
+        let provider = DefaultInterceptorProvider(store: store)
+        
+        let headers: [String: String] = [
+            "Authorization": "Bearer \(vitGitHubBearerToken)",
+            "User-Agent": "TestGitHubGraphQl",
+            "X-GitHub-Api-Version": "2022-11-28"
+        ]
+        
+        let transport = RequestChainNetworkTransport(
+            interceptorProvider: provider,
+            endpointURL: URL(string: vitGitHubGraphQLEndPoint)!,
+            additionalHeaders: headers
+        )
+        
+        apollo = ApolloClient(networkTransport: transport, store: store)
+    }
     
     // define getData func ------------------------------------------------------------------------
-//    func getData(withSearchInput searchInput: String, forScopeBarVariant scopeBarVariant: String, completionHandler: @escaping(Bool) -> Void) {
-//        
-//        if scopeBarVariant == "Repositories" {
-//            // apollo request
-//            let rep = SearchGitReposQlQuery(withName: searchInput)
-//            apollo.fetch(query: rep) { (result, error) in
-//                // chesk response
-//                guard let receivedRepositoriesStruct = result?.data, error == nil else { completionHandler(false); return }
-//                // if response is success
-//                self.repositoriesContainer = receivedRepositoriesStruct
-//                self.limitQueriesStatus = receivedRepositoriesStruct.rateLimit?.remaining
-//                completionHandler(true)
-//            }
-//            
-//        } else if scopeBarVariant == "Users" {
-//            // apollo request
-//            let usr = SearchGitUsersQlQuery(withName: searchInput + " type:user")
-//            apollo.fetch(query: usr) { (result, error) in
-//                // check response
-//                guard let receivedUserStruct = result?.data, error == nil else { completionHandler(false); return }
-//                // if response is success
-//                self.userContainer = receivedUserStruct
-//                self.limitQueriesStatus = receivedUserStruct.rateLimit?.remaining
-//                completionHandler(true)
-//            }
-//            
-//        } else if scopeBarVariant == "Organizations" {
-//            // apollo request
-//            let org = SearchGitOrgsQlQuery(withName: searchInput + " type:org")
-//            apollo.fetch(query: org) { (result, error) in
-//                // check response
-//                guard let receivedOrganizationStruct = result?.data, error == nil else { completionHandler(false); return }
-//                // if response is success
-//                self.organizationsContainer = receivedOrganizationStruct
-//                self.limitQueriesStatus = receivedOrganizationStruct.rateLimit?.remaining
-//                completionHandler(true)
-//            }
-//        }
-//    } // ------------------------------------------------------------------------------------------
-
+    func getData(withSearchInput searchInput: String, forScopeBarVariant scopeBarVariant: String, completionHandler: @escaping(Bool) -> Void) {
+        
+        if scopeBarVariant == "Repositories" {
+            // apollo request
+            let rep = SearchGitReposQLQuery(withName: searchInput)
+            apollo.fetch(query: rep) { (result: Result<GraphQLResult<SearchGitReposQLQuery.Data>, Error>) in
+                switch result {
+                    case .success(let graphQLResult):
+                        if let errors = graphQLResult.errors, !errors.isEmpty {
+                            print("GraphQL errors:", errors)
+                            completionHandler(false)
+                            return
+                        }
+                        guard let data = graphQLResult.data else {
+                            completionHandler(false)
+                            return
+                        }
+                        self.repositoriesContainer = data
+                        self.limitQueriesStatus = data.rateLimit?.remaining
+                        completionHandler(true)
+                        
+                    case .failure(let error):
+                        print("Network error:", error)
+                        completionHandler(false)
+                }
+            }
+        } else if scopeBarVariant == "Users" {
+            // apollo request
+            let usr = SearchGitUsersQLQuery(withName: searchInput + " type:user")
+            apollo.fetch(query: usr) { result in
+                switch result {
+                    case .success(let graphQLResult):
+                        if let errors = graphQLResult.errors, !errors.isEmpty {
+                            print("GraphQL errors:", errors)
+                            completionHandler(false)
+                            return
+                        }
+                        guard let data = graphQLResult.data else {
+                            completionHandler(false)
+                            return
+                        }
+                        self.userContainer = data
+                        self.limitQueriesStatus = data.rateLimit?.remaining
+                        completionHandler(true)
+                        
+                    case .failure(let error):
+                        print("Network error:", error)
+                        completionHandler(false)
+                }
+            }
+        } else if scopeBarVariant == "Organizations" {
+            // apollo request
+            let org = SearchGitOrgsQLQuery(withName: searchInput + " type:org")
+            apollo.fetch(query: org) { result in
+                switch result {
+                    case .success(let graphQLResult):
+                        if let errors = graphQLResult.errors, !errors.isEmpty {
+                            print("GraphQL errors:", errors)
+                            completionHandler(false)
+                            return
+                        }
+                        guard let data = graphQLResult.data else {
+                            completionHandler(false)
+                            return
+                        }
+                        self.organizationsContainer = data
+                        self.limitQueriesStatus = data.rateLimit?.remaining
+                        completionHandler(true)
+                        
+                    case .failure(let error):
+                        print("Network error:", error)
+                        completionHandler(false)
+                }
+            }
+        }
+    } // ------------------------------------------------------------------------------------------
+    
 }
 
