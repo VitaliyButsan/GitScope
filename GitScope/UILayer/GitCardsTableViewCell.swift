@@ -73,6 +73,7 @@ class GitCardsTableViewCell: UITableViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         titleLabel.text = "Company:"
+        titleLabel.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         return titleLabel
     }()
     
@@ -82,7 +83,7 @@ class GitCardsTableViewCell: UITableViewCell {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
         nameLabel.text = "- - - - -"
-        nameLabel.font = UIFont.systemFont(ofSize: 13, weight: UIFont.Weight.medium)
+        nameLabel.font = UIFont.systemFont(ofSize: 13, weight: UIFont.Weight.bold)
         return nameLabel
     }() // ====================================================================
     
@@ -545,7 +546,7 @@ class GitCardsTableViewCell: UITableViewCell {
         
         // set font for some labels
         [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 20, weight: UIFont.Weight.thin) }
-        [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.thin)}
+        [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.regular)}
     }
     
 }

@@ -23,16 +23,17 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     private var defaultCellsAmount = 10
     private var limitCounter = 0
     var db = MyDataBase.shared
-
+    
     // establish custom titleLabel
     private var customTitleView: UILabel = {
         let myTitle = UILabel.init(frame: CGRect(x: 0, y: 0, width: 240, height: 30))
+        myTitle.font = .boldSystemFont(ofSize: 20.0)
         myTitle.textAlignment = .center
         myTitle.backgroundColor = #colorLiteral(red: 0.9845624922, green: 1, blue: 0.9875162251, alpha: 0)
         myTitle.text = "<  🔍  >"
         return myTitle
     }()
-
+    
     // label for limit button
     private var limitButtonLabel: UILabel = {
         let limitLabel = UILabel()
@@ -42,46 +43,45 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         limitLabel.text = "Limit"
         return limitLabel
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // setup tableView
         view.backgroundColor = #colorLiteral(red: 0.9082065659, green: 0.9707477169, blue: 0.9541269933, alpha: 1)
         tableView.allowsSelection = false
         tableView.separatorStyle = .none
         navigationItem.titleView = customTitleView
-
         // register the Cell
         tableView.register(GitCardsTableViewCell.self, forCellReuseIdentifier: cellId)
         // navBarGradient setup
-        setNavBarGradient()
+        if let nav = navigationController?.navigationBar {
+            applyGradientNavBar(nav)
+        }
         // searchController setup
         setupSearchController()
         // navigationBarItems setup
         setupNavigationBarItems()
     }
     
-    // define setNavBarGradient func
-    private func setNavBarGradient() {
+    func applyGradientNavBar(_ navigationBar: UINavigationBar) {
+        let height = navigationBar.bounds.height
+        let size = CGSize(width: navigationBar.bounds.width, height: height)
         
-        if let navigationBar = self.navigationController?.navigationBar {
-            let gradient = CAGradientLayer()
-            var bounds = navigationBar.bounds
-            let statusBarHeight: CGFloat = self.view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
-            bounds.size.height += statusBarHeight
-            gradient.frame = bounds
-            // set gradient [from, to]
-            gradient.colors = [UIColor.init(cgColor: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)).cgColor, UIColor.init(cgColor: #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1)).cgColor]
-            gradient.locations = [0, 1]
-            
-            UIGraphicsBeginImageContext(gradient.bounds.size)
-            gradient.render(in: UIGraphicsGetCurrentContext()!)
-            let image = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            // set gradient image to navBar.bg
-            navigationBar.setBackgroundImage(image, for: .default)
-        }
+        let image = UIImage.gradientImage(
+            size: size,
+            colors: [UIColor.init(cgColor: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)), UIColor.init(cgColor: #colorLiteral(red: 0.9069359303, green: 0.971636951, blue: 0.9524329305, alpha: 1))]
+        )
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundImage = image
+        appearance.shadowColor = .clear
+        
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.compactScrollEdgeAppearance = appearance
     }
     
     // setup limit button
@@ -93,7 +93,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         limitButton.addSubview(limitButtonLabel)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: limitButton)
     }
-
+    
     // limit button handler
     @objc func limitButtonHandler() {
         if MyDataBase.shared.limitQueriesStatus != nil {
@@ -102,7 +102,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
             self.repeaterTitle(withText: "<  Limit not received!  >", withTextColor: #colorLiteral(red: 0.7184983492, green: 0.07270544022, blue: 0.1745591164, alpha: 1))
         }
     }
-        
+    
     // repeater titleLabel animation func
     @objc private func repeaterTitle(withText titleText: String, withTextColor textColor: UIColor) {
         animatorTitleLabel(withText: titleText, textColor: textColor, withDelay: 0.0)
@@ -126,9 +126,48 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         searchController.searchBar.textField?.textColor = .red
         searchController.obscuresBackgroundDuringPresentation = false // ?
         searchController.obscuresBackgroundDuringPresentation = false
+        
         navigationItem.hidesSearchBarWhenScrolling = false
+        
+        if let scopeBar = searchController.searchBar.value(forKey: "scopeBar") as? UISegmentedControl {
+            scopeBar.setTitleTextAttributes([.foregroundColor: UIColor.systemBlue], for: .normal)
+            scopeBar.setTitleTextAttributes([.foregroundColor: UIColor.systemBlue], for: .highlighted)
+            
+            scopeBar.selectedSegmentTintColor = .systemBlue
+            scopeBar.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
+            
+            let lineColor = UIColor.systemBlue
+            let size = CGSize(width: 1, height: scopeBar.bounds.height)
+            UIGraphicsBeginImageContextWithOptions(size, false, 0)
+            lineColor.setFill()
+            UIRectFill(CGRect(origin: .zero, size: size))
+            let dividerImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            scopeBar.setDividerImage(dividerImage,
+                                     forLeftSegmentState: .normal,
+                                     rightSegmentState: .normal,
+                                     barMetrics: .default)
+            
+            scopeBar.layer.cornerRadius = 8.0
+            scopeBar.layer.masksToBounds = true
+            scopeBar.layer.borderWidth = 1.0
+            scopeBar.layer.borderColor = UIColor.systemBlue.cgColor
+        }
         navigationItem.searchController = searchController
         definesPresentationContext = true
+    }
+    
+    private func styleScopeBar(selectedTint: UIColor, selectedText: UIColor = .white) {
+        guard let scopeBar = searchController.searchBar.value(forKey: "scopeBar") as? UISegmentedControl else { return }
+        
+        scopeBar.layer.cornerRadius = 8.0
+        scopeBar.layer.masksToBounds = true
+        scopeBar.layer.borderWidth = 1.0
+        scopeBar.layer.borderColor = #colorLiteral(red: 0, green: 0.477191031, blue: 1, alpha: 1)
+        
+        scopeBar.selectedSegmentTintColor = selectedTint
+        scopeBar.setTitleTextAttributes([.foregroundColor: selectedText], for: .selected)
     }
     
     // get data
@@ -178,7 +217,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     
     // selected cell responder
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
+        
     }
     
     // set height for row
@@ -203,7 +242,7 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
     // reuse the cell --------------------------------------------------------------------------------------------------
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! GitCardsTableViewCell
-
+        
         // set titles based on searchScopeBar variant
         cell.setLabelsTitle(withSearchScopeBarVariant: scopeBarDefaultTitle)
         
@@ -237,11 +276,11 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
                 greatherIndex = indexPath.row
             }
         }
-
+        
         return cell
     } // ----------------------------------------------------------------------------------------------------------------
-
-  
+    
+    
     // define inamation titleLabel func
     private func animatorTitleLabel(withText inputText: String, textColor inputColor: UIColor, withDelay inputedDelay: Double) {
         searchController.searchBar.textField?.textColor = inputColor
@@ -264,8 +303,10 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         MyDataBase.shared.repositoriesContainer = nil
         MyDataBase.shared.userContainer = nil
         MyDataBase.shared.organizationsContainer = nil
-
+        
         scopeBarDefaultTitle = searchBar.scopeButtonTitles![selectedScope]
+        
+        styleScopeBar(selectedTint: .systemBlue, selectedText: .white)
         // animate titleLabel with scopeBar title
         self.animatorTitleLabel(withText: "<  " + self.scopeBarDefaultTitle + " 🔍  >", textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), withDelay: 0.0)
         searchBar.text = ""
@@ -275,13 +316,32 @@ class GitCardsTableViewController: UITableViewController, UISearchResultsUpdatin
         greatherIndex = -1
         defaultCellsAmount = 10
         tableView.reloadData()
-        
     }
     
     // input searching responder
     func updateSearchResults(for searchController: UISearchController) {
         // save input text
         inputSearchText = searchController.searchBar.text?.trimmingCharacters(in: .whitespaces).lowercased() ?? ""
+    }
+    
+}
+
+extension UIImage {
+    
+    static func gradientImage(size: CGSize,
+                              colors: [UIColor],
+                              locations: [NSNumber]? = nil) -> UIImage {
+        let layer = CAGradientLayer()
+        layer.frame = CGRect(origin: .zero, size: size)
+        layer.colors = colors.map { $0.cgColor }
+        layer.locations = locations
+        layer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        layer.endPoint   = CGPoint(x: 0.5, y: 1.0)
+        
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            layer.render(in: context.cgContext)
+        }
     }
     
 }
