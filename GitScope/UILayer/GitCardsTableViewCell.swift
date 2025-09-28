@@ -545,8 +545,8 @@ class GitCardsTableViewCell: UITableViewCell {
         }
         
         // set font for some labels
-        [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 20, weight: UIFont.Weight.thin) }
-        [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.regular)}
+        [yearCounterLabel, repoCounterLabel, starsCounterLabel, counterProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 18, weight: UIFont.Weight.thin) }
+        [titleCompanyLabel, titleYearLabel, titleRepoLabel, titleStarsLabel, titleProfLanguagesLabel].forEach { $0.font = UIFont.systemFont(ofSize: 14, weight: UIFont.Weight.regular)}
     }
     
 }
