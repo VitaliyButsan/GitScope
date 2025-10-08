@@ -5,7 +5,7 @@
 
 public struct OrgDetail: GitHubAPI.SelectionSet, Fragment {
   public static var fragmentDefinition: StaticString {
-    #"fragment OrgDetail on Organization { __typename avatarUrl id isVerified name websiteUrl membersWithRole { __typename totalCount } repositories(first: 20, affiliations: [OWNER]) { __typename nodes { __typename primaryLanguage { __typename name } } totalCount } }"#
+    #"fragment OrgDetail on Organization { __typename avatarUrl id isVerified name websiteUrl membersWithRole { __typename totalCount } repositories(first: 20, ownerAffiliations: [OWNER]) { __typename nodes { __typename primaryLanguage { __typename name } } totalCount } }"#
   }
 
   public let __data: DataDict
@@ -22,7 +22,7 @@ public struct OrgDetail: GitHubAPI.SelectionSet, Fragment {
     .field("membersWithRole", MembersWithRole.self),
     .field("repositories", Repositories.self, arguments: [
       "first": 20,
-      "affiliations": ["OWNER"]
+      "ownerAffiliations": ["OWNER"]
     ]),
   ] }
 

@@ -57,7 +57,7 @@ fragment UserDetail on User {
     company
     createdAt
     login
-    repositories(first: 30, affiliations: [OWNER]) {
+    repositories(first: 30, ownerAffiliations: [OWNER]) {
         nodes {
             primaryLanguage {
                 name
@@ -97,7 +97,7 @@ fragment OrgDetail on Organization {
     membersWithRole {
         totalCount
     }
-    repositories(first: 20, affiliations: [OWNER]) {
+    repositories(first: 20, ownerAffiliations: [OWNER]) {
         nodes {
             primaryLanguage {
                 name

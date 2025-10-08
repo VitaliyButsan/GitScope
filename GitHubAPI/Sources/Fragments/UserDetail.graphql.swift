@@ -5,7 +5,7 @@
 
 public struct UserDetail: GitHubAPI.SelectionSet, Fragment {
   public static var fragmentDefinition: StaticString {
-    #"fragment UserDetail on User { __typename avatarUrl company createdAt login repositories(first: 30, affiliations: [OWNER]) { __typename nodes { __typename primaryLanguage { __typename name } stargazers { __typename totalCount } } totalCount } }"#
+    #"fragment UserDetail on User { __typename avatarUrl company createdAt login repositories(first: 30, ownerAffiliations: [OWNER]) { __typename nodes { __typename primaryLanguage { __typename name } stargazers { __typename totalCount } } totalCount } }"#
   }
 
   public let __data: DataDict
@@ -20,7 +20,7 @@ public struct UserDetail: GitHubAPI.SelectionSet, Fragment {
     .field("login", String.self),
     .field("repositories", Repositories.self, arguments: [
       "first": 30,
-      "affiliations": ["OWNER"]
+      "ownerAffiliations": ["OWNER"]
     ]),
   ] }
 
