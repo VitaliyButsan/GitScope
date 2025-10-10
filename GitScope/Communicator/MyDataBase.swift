@@ -30,9 +30,7 @@ class MyDataBase {
         let provider = DefaultInterceptorProvider(store: store)
         
         let headers: [String: String] = [
-            "Authorization": "Bearer \(vitGitHubBearerToken)",
-            "User-Agent": "TestGitHubGraphQl",
-            "X-GitHub-Api-Version": "2022-11-28"
+            "Authorization": "Bearer \(vitGitHubBearerToken)"
         ]
         
         let transport = RequestChainNetworkTransport(
